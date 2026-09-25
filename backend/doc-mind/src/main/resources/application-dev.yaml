@@ -1,6 +1,9 @@
 spring:
   application:
     name: docmind-intelligence-engine
+  threads:
+    virtual:
+      enabled: true
   # Database Configuration
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -17,7 +20,7 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     open-in-view: false
     properties:
@@ -145,8 +148,8 @@ security:
     cookieDomain: ${COOKIE_DOMAIN}
   # Keys Configuration
   keys:
-    privateKeyPath: ${PRIVATE_KEY_PATH:classpath:key/private_key.pem}
-    publicKeyPath: ${PUBLIC_KEY_PATH:classpath:key/public_key.pem}
+    privateKeyPath: ${PRIVATE_KEY_PATH}
+    publicKeyPath: ${PUBLIC_KEY_PATH}
 # DocMind Default Credentials and Cors Configuration
 docmind:
   default:
@@ -167,7 +170,12 @@ docmind:
     allowed-headers:
       - Content-Type
       - X-Api-Version
+      - X-API-Version
       - X-Conversation-ID
+      - Accept
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
     allow-credentials: true
 # Swagger Configuration
 springdoc:
