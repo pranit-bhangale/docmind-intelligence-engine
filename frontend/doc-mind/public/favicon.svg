@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <!-- The main rounded grey panel, now filling the entire SVG canvas and centered -->
+  <rect x="0" y="0" width="100" height="100" rx="28" fill="#2d2e30" stroke="#3b3c3e" stroke-width="0.5" />
+  
+  <!-- Sparkle Icon Elements, repositioned to center within the 100x100 space -->
+  <g fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    
+    <!-- Central Sparkle / Star outline -->
+    <path d="M 50 22 
+             C 50 38, 41 46, 26 46 
+             C 41 46, 50 54, 50 70 
+             C 50 54, 59 46, 74 46 
+             C 59 46, 50 38, 50 22 Z" />
+             
+    <!-- Top Right Plus Sign -->
+    <path d="M 76 22 V 34 M 70 28 H 82" />
+    
+    <!-- Bottom Left Hollow Circle -->
+    <circle cx="28" cy="66" r="4.5" />
+    
+  </g>
+</svg>
