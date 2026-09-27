@@ -3,6 +3,8 @@ package com.pranit.docmind.auth.controller;
 import com.pranit.docmind.auth.application.service.RoleService;
 import com.pranit.docmind.auth.domain.dto.RoleResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,17 +22,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Tag(
-        name = "Roles Management",
-        description = "Endpoints for roles."
+        name = "Role Management",
+        description = "Endpoints for retrieving system roles and authority definitions for tenant access control."
 )
 public class RoleController {
 
     private final RoleService roleService;
 
     @Operation(
-            summary = "Get all roles",
-            description = "Returns a roles list."
+            summary = "Fetch all available system roles",
+            description = "Returns the complete list of system roles (COMPANY_ADMIN, ADMIN, PLATFORM_ADMIN, USER) available for role assignment."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of system roles fetched successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires admin privileges")
+    })
     @GetMapping(version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN')")
     public ResponseEntity<List<RoleResponse>> fetchAllRoles() {

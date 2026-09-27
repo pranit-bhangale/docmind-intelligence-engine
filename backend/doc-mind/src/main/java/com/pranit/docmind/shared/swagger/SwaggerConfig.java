@@ -13,16 +13,15 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(
                 title = "DocMind Intelligence Engine API",
-                summary = "Multi-tenant document intelligence and RAG API",
+                summary = "Multi-tenant document intelligence and Retrieval-Augmented Generation (RAG) API",
                 description = """
-                        REST API for the DocMind Intelligence Engine, providing
-                        multi-tenant authentication, authorization, document ingestion,
-                        knowledge management, semantic retrieval, and
-                        Retrieval-Augmented Generation (RAG) capabilities.
+                        REST API for the DocMind Intelligence Engine, providing enterprise multi-tenant authentication, 
+                        role-based access control (RBAC), tenant provisioning lifecycle management, document ingestion, 
+                        knowledge management, semantic vector retrieval, and Retrieval-Augmented Generation (RAG) capabilities.
                         
-                        DocMind transforms documents into searchable knowledge using
-                        embeddings and vector storage, enabling context-aware
-                        conversational question answering over enterprise knowledge.
+                        DocMind isolates tenant workspaces through dedicated database schemas, secures user sessions 
+                        via HttpOnly JWT cookies, and manages complete tenant lifecycles including registration, 
+                        administrative approval, activation, deactivation, and suspension.
                         """,
                 version = "1.0.0",
                 contact = @Contact(

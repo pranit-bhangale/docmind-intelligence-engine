@@ -6,6 +6,8 @@ import com.pranit.docmind.auth.domain.dto.UpdateUserRequest;
 import com.pranit.docmind.auth.domain.dto.UserResponse;
 import com.pranit.docmind.shared.wrapper.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -28,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @Tag(
         name = "User Management",
-        description = "Endpoints for managing the authenticated user's password, profile, and account."
+        description = "Endpoints for managing user accounts, password updates, profile modifications, profile deletion, and tenant user pagination."
 )
 public class UserController {
 
@@ -36,8 +38,13 @@ public class UserController {
 
     @Operation(
             summary = "Change account password",
-            description = "Updates the authenticated user's password after validating the current password."
+            description = "Updates the authenticated user's password after validating the current password credentials."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Password updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or incorrect current password"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access")
+    })
     @PatchMapping(value = "/password", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<Void> changeAccountPassword(@Valid @RequestBody UpdatePasswordRequest request) {
@@ -47,8 +54,13 @@ public class UserController {
 
     @Operation(
             summary = "Update user profile",
-            description = "Updates the authenticated user's profile information such as username, email, and name."
+            description = "Updates profile details for the authenticated user such as display name, email, and metadata."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User profile updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation failure"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access")
+    })
     @PatchMapping(value = "/profile", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<Void> updateProfile(@Valid @RequestBody UpdateUserRequest request) {
@@ -57,9 +69,13 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Delete user profile",
-            description = "Soft-deletes the authenticated user's account and marks the profile as deleted."
+            summary = "Delete user account profile",
+            description = "Soft-deletes the current authenticated user's account and invalidates session access."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "User profile soft-deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access")
+    })
     @DeleteMapping(value = "/profile", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<Void> deleteProfile() {
@@ -68,9 +84,14 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get paginated users",
-            description = "Returns a paginated list of users with optional keyword filtering and sorting."
+            summary = "Get paginated user list",
+            description = "Returns a paginated list of users within the tenant context with keyword filtering, sorting, and page controls."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paginated list of users retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires administrator privileges")
+    })
     @GetMapping(value = "/all", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN','ADMIN')")
     public ResponseEntity<PageResponse<UserResponse>> findAllUsers(

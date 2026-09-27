@@ -5,6 +5,8 @@ import com.pranit.docmind.tenant.application.service.TenantService;
 import com.pranit.docmind.tenant.domain.dto.TenantRegisterRequest;
 import com.pranit.docmind.tenant.domain.dto.TenantResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -29,16 +31,21 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @Tag(
         name = "Tenant Management",
-        description = "Endpoints for approving, activating, deactivating, suspending, and listing tenants."
+        description = "Endpoints for multi-tenant organization onboarding, administrative approval workflows, status management (active, deactivated, suspended), and tenant context resolution."
 )
 public class TenantController {
 
     private final TenantService tenantService;
 
     @Operation(
-            summary = "Register tenant",
-            description = "Registers a new tenant and creates a pending tenant registration."
+            summary = "Register new tenant organization",
+            description = "Submits a new tenant organization registration request with company details and initial administrator credentials."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Tenant organization registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation error"),
+            @ApiResponse(responseCode = "409", description = "Company code or email already registered")
+    })
     @PostMapping(value = "/register", version = "v1")
     public ResponseEntity<Void> register(@Valid @RequestBody final TenantRegisterRequest request) {
         this.tenantService.registerTenant(request);
@@ -46,9 +53,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "Approve tenant",
-            description = "Approves a pending tenant and allows the tenant to proceed with activation."
+            summary = "Approve pending tenant organization",
+            description = "Approves a pending tenant organization by PLATFORM_ADMIN, triggering multi-tenant database schema provisioning."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tenant approved and database schema provisioned successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires PLATFORM_ADMIN authority"),
+            @ApiResponse(responseCode = "404", description = "Tenant organization not found")
+    })
     @PostMapping(value = "/approve/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<Void> approveTenant(@PathVariable("tenant-id") final String tenantId) {
@@ -57,9 +69,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "Activate tenant",
-            description = "Activates the specified tenant and enables access to tenant services."
+            summary = "Activate tenant organization",
+            description = "Activates an approved or suspended tenant organization, restoring active service status and user authentication."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tenant organization activated successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires PLATFORM_ADMIN authority"),
+            @ApiResponse(responseCode = "404", description = "Tenant organization not found")
+    })
     @PatchMapping(value = "/activate/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<Void> activateTenant(@PathVariable("tenant-id") final String tenantId) {
@@ -68,9 +85,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "Deactivate tenant",
-            description = "Deactivates the specified tenant and prevents access to tenant services."
+            summary = "Deactivate tenant organization",
+            description = "Deactivates an active tenant organization, disabling tenant workspace access and API access."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tenant organization deactivated successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires PLATFORM_ADMIN authority"),
+            @ApiResponse(responseCode = "404", description = "Tenant organization not found")
+    })
     @PatchMapping(value = "/deactivate/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<Void> deactivateTenant(@PathVariable("tenant-id") final String tenantId) {
@@ -79,9 +101,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "Suspend tenant",
-            description = "Suspends the specified tenant and temporarily restricts tenant access."
+            summary = "Suspend tenant organization",
+            description = "Suspends a tenant organization due to compliance policy or administrative directive, restricting workspace access."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tenant organization suspended successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires PLATFORM_ADMIN authority"),
+            @ApiResponse(responseCode = "404", description = "Tenant organization not found")
+    })
     @PatchMapping(value = "/suspend/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<Void> suspendTenant(@PathVariable("tenant-id") final String tenantId) {
@@ -90,9 +117,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "List tenants",
-            description = "Returns a paginated and sortable list of tenants with optional keyword filtering."
+            summary = "List all tenant organizations",
+            description = "Returns a paginated list of registered tenant organizations with status filtering, sorting, and keyword search controls."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paginated list of tenants retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires PLATFORM_ADMIN authority")
+    })
     @GetMapping(version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<PageResponse<TenantResponse>> findAllTenants(
@@ -106,9 +138,14 @@ public class TenantController {
     }
 
     @Operation(
-            summary = "Current tenants",
-            description = "Returns a current tenant."
+            summary = "Get current active tenant details",
+            description = "Retrieves details of the currently active tenant organization bound to the request context."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Current tenant organization details retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access"),
+            @ApiResponse(responseCode = "404", description = "Tenant context not found")
+    })
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantResponse> getCurrentTenant() {

@@ -8,6 +8,8 @@ import com.pranit.docmind.auth.domain.dto.LoginResponse;
 import com.pranit.docmind.auth.domain.dto.UserResponse;
 import com.pranit.docmind.auth.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,8 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Validated
 @Tag(
-        name = "Authentication",
-        description = "Endpoints for user authentication, token refresh, and logout."
+        name = "Authentication & Session",
+        description = "Endpoints for user authentication, current identity resolution, token renewal, and session termination."
 )
 public class LoginController {
 
@@ -38,22 +40,29 @@ public class LoginController {
     private final TokenService tokenService;
     private final LogoutService logoutService;
 
-    /**
-     * api authenticateUser(username,password) --> call authentication manager --> call authentication provider --> call userDetailService --> call database to fetch data
-     * once data is validated then security context holder confirms that request is authenticated
-     * after that Access token is generated for client and send back to client
-     * in HttpOnlyCookie
-     */
     @Operation(
-            summary = "Authenticate user",
-            description = "Authenticates the user and sets the access and refresh tokens in secure HTTP-only cookies."
+            summary = "Authenticate user credentials",
+            description = "Authenticates user login credentials against the tenant database and issues secure access and refresh tokens stored in HttpOnly cookies."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User successfully authenticated"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload or validation failure"),
+            @ApiResponse(responseCode = "401", description = "Bad credentials or inactive account")
+    })
     @PostMapping(value = "/login", version = "v1")
     public ResponseEntity<LoginResponse> authenticateUser(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         final LoginResponse loginRespone = loginService.authenticateUser(request, response);
         return ResponseEntity.ok().body(loginRespone);
     }
 
+    @Operation(
+            summary = "Get current authenticated user identity",
+            description = "Retrieves current user identity details including username, email, assigned roles, active status, and tenant context."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Current user profile retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized or invalid access token")
+    })
     @GetMapping(value = "/me", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<UserResponse> me() {
@@ -62,8 +71,12 @@ public class LoginController {
 
     @Operation(
             summary = "Refresh access token",
-            description = "Validates the refresh token and generates a new access and refresh token."
+            description = "Validates the HTTP-only refresh token cookie and issues a new access token and refresh token."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Access token refreshed successfully"),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid refresh token")
+    })
     @PostMapping(value = "/refresh", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<Void> refreshToken(final HttpServletRequest request, final HttpServletResponse response) {
@@ -77,9 +90,13 @@ public class LoginController {
     }
 
     @Operation(
-            summary = "Logout user",
-            description = "Revokes the user's access and refresh tokens and clears the authentication cookies."
+            summary = "Logout user session",
+            description = "Revokes active access and refresh tokens, invalidating the session and clearing authentication cookies."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User session logged out successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized or missing token")
+    })
     @PostMapping(value = "/logout", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
