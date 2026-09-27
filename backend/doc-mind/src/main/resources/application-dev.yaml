@@ -1,6 +1,9 @@
 spring:
   application:
     name: docmind-intelligence-engine
+  threads:
+    virtual:
+      enabled: true
   # Database Configuration
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
@@ -17,16 +20,25 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        multi_tenancy: SCHEMA
   # Flyway Migration Configuration
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations:
+      - classpath:db/migration/common
+    table: flyway_schema_history
     baseline-on-migrate: true
     baseline-version: 1
     validate-on-migrate: true
@@ -39,6 +51,9 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 5s
+  modulith:
+    moments:
+      enabled: false
   # Java Mail Sender Configuration
   mail:
     host: ${MAIL_HOST}
@@ -131,6 +146,10 @@ security:
     cookieSecure: ${COOKIE_SECURE}
     cookieSameSite: ${COOKIE_SAME_SITE}
     cookieDomain: ${COOKIE_DOMAIN}
+  # Keys Configuration
+  keys:
+    privateKeyPath: ${PRIVATE_KEY_PATH}
+    publicKeyPath: ${PUBLIC_KEY_PATH}
 # DocMind Default Credentials and Cors Configuration
 docmind:
   default:
@@ -151,14 +170,16 @@ docmind:
     allowed-headers:
       - Content-Type
       - X-Api-Version
+      - X-API-Version
       - X-Conversation-ID
+      - Accept
+      - Origin
+      - Access-Control-Request-Method
+      - Access-Control-Request-Headers
     allow-credentials: true
-  # Keys Configuration
-  keys:
-    privateKeyPath: ${PRIVATE_KEY_PATH:classpath:key/private_key.pem}
-    publicKeyPath: ${PUBLIC_KEY_PATH:classpath:key/public_key.pem}
 # Swagger Configuration
 springdoc:
+  default-produces-media-type: application/json
   api-docs:
     enabled: true
   swagger-ui:

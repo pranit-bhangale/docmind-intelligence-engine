@@ -1,0 +1,1024 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DocMind Intelligence Engine API",
+    "summary": "Multi-tenant document intelligence and Retrieval-Augmented Generation (RAG) API",
+    "description": "REST API for the DocMind Intelligence Engine, providing enterprise multi-tenant authentication, role-based access control (RBAC), tenant provisioning lifecycle management, document ingestion, knowledge management, semantic vector retrieval, and Retrieval-Augmented Generation (RAG) capabilities.\n\nDocMind isolates tenant workspaces through dedicated database schemas, secures user sessions via HttpOnly JWT cookies, and manages complete tenant lifecycles including registration, administrative approval, activation, deactivation, and suspension.",
+    "contact": {
+      "name": "Pranit Bhangale",
+      "url": "https://pranitbhangale.vercel.app",
+      "email": "pranitbhangale1453@gmail.com"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Default Server URL"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication & Session",
+      "description": "Endpoints for user authentication, current identity resolution, token renewal, and session termination."
+    },
+    {
+      "name": "User Registration",
+      "description": "Endpoints for administrator-driven user registration within tenant organizations."
+    },
+    {
+      "name": "Role Management",
+      "description": "Endpoints for retrieving system roles and authority definitions for tenant access control."
+    },
+    {
+      "name": "User Management",
+      "description": "Endpoints for managing user accounts, password updates, profile modifications, profile deletion, and tenant user pagination."
+    },
+    {
+      "name": "Tenant Management",
+      "description": "Endpoints for multi-tenant organization onboarding, administrative approval workflows, status management (active, deactivated, suspended), and tenant context resolution."
+    },
+    {
+      "name": "Document Intelligence",
+      "description": "Endpoints for uploading, parsing, embedding, retrieving, and managing multi-format enterprise documents and vector storage."
+    }
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication & Session"
+        ],
+        "summary": "Authenticate user credentials",
+        "description": "Authenticates user login credentials against the tenant database and issues secure access and refresh tokens stored in HttpOnly cookies.",
+        "operationId": "authenticateUser",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request payload or validation failure"
+          },
+          "401": {
+            "description": "Bad credentials or inactive account"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication & Session"
+        ],
+        "summary": "Get current authenticated user identity",
+        "description": "Retrieves current user identity details including username, email, assigned roles, active status, and tenant context.",
+        "operationId": "getCurrentUser",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or invalid access token"
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication & Session"
+        ],
+        "summary": "Refresh access token",
+        "description": "Validates the HTTP-only refresh token cookie and issues a new access token and refresh token.",
+        "operationId": "refreshToken",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access token refreshed successfully"
+          },
+          "401": {
+            "description": "Missing or invalid refresh token"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication & Session"
+        ],
+        "summary": "Logout user session",
+        "description": "Revokes active access and refresh tokens, invalidating the session and clearing authentication cookies.",
+        "operationId": "logout",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User session logged out successfully"
+          },
+          "401": {
+            "description": "Unauthorized or missing token"
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "tags": [
+          "User Registration"
+        ],
+        "summary": "Register new user by administrator",
+        "description": "Creates a new user account within the requesting administrator's tenant context with assigned roles and credentials.",
+        "operationId": "registerNewUserByAdmin",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/RegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid request payload or validation error"
+          },
+          "403": {
+            "description": "Forbidden - requires admin privileges"
+          },
+          "409": {
+            "description": "User or email already exists"
+          }
+        }
+      }
+    },
+    "/api/roles": {
+      "get": {
+        "tags": [
+          "Role Management"
+        ],
+        "summary": "Fetch all available system roles",
+        "description": "Returns the complete list of system roles (COMPANY_ADMIN, ADMIN, PLATFORM_ADMIN, USER) available for role assignment.",
+        "operationId": "fetchAllRoles",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of system roles fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "": "#/components/schemas/RoleResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access"
+          },
+          "403": {
+            "description": "Forbidden - requires admin privileges"
+          }
+        }
+      }
+    },
+    "/api/user/password": {
+      "patch": {
+        "tags": [
+          "User Management"
+        ],
+        "summary": "Change account password",
+        "description": "Updates the authenticated user's password after validating current password credentials.",
+        "operationId": "changeAccountPassword",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/UpdatePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully"
+          },
+          "400": {
+            "description": "Invalid request payload or incorrect current password"
+          },
+          "401": {
+            "description": "Unauthorized access"
+          }
+        }
+      }
+    },
+    "/api/user/profile": {
+      "patch": {
+        "tags": [
+          "User Management"
+        ],
+        "summary": "Update user profile",
+        "description": "Updates profile details for the authenticated user such as display name, email, and metadata.",
+        "operationId": "updateProfile",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully"
+          },
+          "400": {
+            "description": "Invalid request payload or validation failure"
+          },
+          "401": {
+            "description": "Unauthorized access"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "User Management"
+        ],
+        "summary": "Delete user account profile",
+        "description": "Soft-deletes the current authenticated user's account and invalidates session access.",
+        "operationId": "deleteProfile",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User profile soft-deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized access"
+          }
+        }
+      }
+    },
+    "/api/user/all": {
+      "get": {
+        "tags": [
+          "User Management"
+        ],
+        "summary": "Get paginated user list",
+        "description": "Returns a paginated list of users within the tenant context with keyword filtering, sorting, and page controls.",
+        "operationId": "findAllUsers",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "username"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ASC"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/PageResponseUserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access"
+          },
+          "403": {
+            "description": "Forbidden - requires administrator privileges"
+          }
+        }
+      }
+    },
+    "/api/tenants/register": {
+      "post": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Register new tenant organization",
+        "description": "Submits a new tenant organization registration request with company details and initial administrator credentials.",
+        "operationId": "registerTenant",
+        "parameters": [
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/TenantRegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tenant organization registered successfully"
+          },
+          "400": {
+            "description": "Invalid request payload or validation error"
+          },
+          "409": {
+            "description": "Company code or email already registered"
+          }
+        }
+      }
+    },
+    "/api/tenants/approve/{tenant-id}": {
+      "post": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Approve pending tenant organization",
+        "description": "Approves a pending tenant organization by PLATFORM_ADMIN, triggering multi-tenant database schema provisioning.",
+        "operationId": "approveTenant",
+        "parameters": [
+          {
+            "name": "tenant-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant approved and database schema provisioned successfully"
+          },
+          "403": {
+            "description": "Forbidden - requires PLATFORM_ADMIN authority"
+          },
+          "404": {
+            "description": "Tenant organization not found"
+          }
+        }
+      }
+    },
+    "/api/tenants/activate/{tenant-id}": {
+      "patch": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Activate tenant organization",
+        "description": "Activates an approved or suspended tenant organization, restoring active service status and user authentication.",
+        "operationId": "activateTenant",
+        "parameters": [
+          {
+            "name": "tenant-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant organization activated successfully"
+          },
+          "403": {
+            "description": "Forbidden - requires PLATFORM_ADMIN authority"
+          },
+          "404": {
+            "description": "Tenant organization not found"
+          }
+        }
+      }
+    },
+    "/api/tenants/deactivate/{tenant-id}": {
+      "patch": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Deactivate tenant organization",
+        "description": "Deactivates an active tenant organization, disabling tenant workspace access and API access.",
+        "operationId": "deactivateTenant",
+        "parameters": [
+          {
+            "name": "tenant-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant organization deactivated successfully"
+          },
+          "403": {
+            "description": "Forbidden - requires PLATFORM_ADMIN authority"
+          },
+          "404": {
+            "description": "Tenant organization not found"
+          }
+        }
+      }
+    },
+    "/api/tenants/suspend/{tenant-id}": {
+      "patch": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Suspend tenant organization",
+        "description": "Suspends a tenant organization due to compliance policy or administrative directive, restricting workspace access.",
+        "operationId": "suspendTenant",
+        "parameters": [
+          {
+            "name": "tenant-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant organization suspended successfully"
+          },
+          "403": {
+            "description": "Forbidden - requires PLATFORM_ADMIN authority"
+          },
+          "404": {
+            "description": "Tenant organization not found"
+          }
+        }
+      }
+    },
+    "/api/tenants": {
+      "get": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "List all tenant organizations",
+        "description": "Returns a paginated list of registered tenant organizations with status filtering, sorting, and keyword search controls.",
+        "operationId": "findAllTenants",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "username"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ASC"
+            }
+          },
+          {
+            "name": "X-API-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "v1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of tenants retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/PageResponseTenantResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access"
+          },
+          "403": {
+            "description": "Forbidden - requires PLATFORM_ADMIN authority"
+          }
+        }
+      }
+    },
+    "/api/tenants/me": {
+      "get": {
+        "tags": [
+          "Tenant Management"
+        ],
+        "summary": "Get current active tenant details",
+        "description": "Retrieves details of the currently active tenant organization bound to the request context.",
+        "operationId": "getCurrentTenant",
+        "responses": {
+          "200": {
+            "description": "Current tenant organization details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/TenantResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access"
+          },
+          "404": {
+            "description": "Tenant context not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "accessToken": {
+        "type": "apiKey",
+        "name": "accessToken",
+        "in": "cookie",
+        "description": "JWT access token stored in HttpOnly cookie"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "example": "Secret123!"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT Access Token"
+          },
+          "user": {
+            "": "#/components/schemas/UserResponse"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tenantId": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistrationRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      },
+      "RoleResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdatePasswordRequest": {
+        "type": "object",
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "TenantRegisterRequest": {
+        "type": "object",
+        "required": [
+          "companyName",
+          "companyCode",
+          "adminUsername",
+          "adminEmail",
+          "adminPassword"
+        ],
+        "properties": {
+          "companyName": {
+            "type": "string"
+          },
+          "companyCode": {
+            "type": "string"
+          },
+          "adminUsername": {
+            "type": "string"
+          },
+          "adminEmail": {
+            "type": "string"
+          },
+          "adminPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "TenantResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "companyCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "ACTIVE",
+              "DEACTIVATED",
+              "SUSPENDED"
+            ]
+          },
+          "adminEmail": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseUserResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "": "#/components/schemas/UserResponse"
+            }
+          },
+          "pageNumber": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "last": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageResponseTenantResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "": "#/components/schemas/TenantResponse"
+            }
+          },
+          "pageNumber": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "last": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
