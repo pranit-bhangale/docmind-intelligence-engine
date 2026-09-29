@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +24,5 @@ public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID
             """)
     void updateFileStatus(@Param("documentId") UUID documentId, @Param("status") FileStatus status);
 
+    Optional<DocumentMetadata> findByDocumentId(UUID documentId);
 }

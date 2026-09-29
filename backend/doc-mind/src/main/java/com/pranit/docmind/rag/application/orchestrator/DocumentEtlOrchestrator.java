@@ -2,6 +2,7 @@ package com.pranit.docmind.rag.application.orchestrator;
 
 import com.pranit.docmind.document.domain.entity.DocumentType;
 import com.pranit.docmind.rag.application.enricher.DocumentEnricher;
+import com.pranit.docmind.rag.application.service.TokenTextSplitter;
 import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
 import com.pranit.docmind.shared.domain.Metadata;
 import com.pranit.docmind.shared.properties.RagProperties;
@@ -11,7 +12,6 @@ import org.springframework.ai.reader.ExtractedTextFormatter;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -46,10 +46,15 @@ public final class DocumentEtlOrchestrator {
         final var config = properties.chunking();
         final var splitter = TokenTextSplitter.builder()
                 .withChunkSize(config.chunkSize())
+                .withChunkOverlap(config.chunkOverlap())
                 .withMinChunkSizeChars(config.minChunkSizeChars())
                 .withMinChunkLengthToEmbed(config.minChunkLengthToEmbed())
                 .withMaxNumChunks(config.maxNumChunks())
                 .withKeepSeparator(config.keepSeparator())
+                .withNormalizeWhitespace(config.normalizeWhitespace())
+                .withRespectHeadings(config.respectHeadings())
+                .withHeadingContext(config.headingContext())
+                .withSectionBreakRatio(config.sectionBreakRatio())
                 .build();
         return splitter.transform(documents);
     }

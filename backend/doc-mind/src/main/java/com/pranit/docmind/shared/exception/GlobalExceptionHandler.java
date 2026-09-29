@@ -1,5 +1,6 @@
 package com.pranit.docmind.shared.exception;
 
+import com.openai.errors.InternalServerException;
 import com.pranit.docmind.shared.wrapper.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -121,5 +122,11 @@ public class GlobalExceptionHandler {
             (final Exception ex, final HttpServletRequest request) {
         log.error("Unhandled exception", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.", request);
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<ErrorResponse> handleInternalServerException(
+            InternalServerException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request);
     }
 }

@@ -17,10 +17,17 @@ public record RagProperties(
 
     public record Chunking(
             @Min(1) int chunkSize,
-            @Min(1) int minChunkSizeChars,
-            @Min(1) int minChunkLengthToEmbed,
+            @Min(0) int chunkOverlap,
+            @Min(0) int minChunkSizeChars,
+            @Min(0) int minChunkLengthToEmbed,
             @Min(1) int maxNumChunks,
-            boolean keepSeparator
+            boolean keepSeparator,
+            boolean normalizeWhitespace,
+            boolean respectHeadings,
+            boolean headingContext,
+            @DecimalMin("0.0")
+            @DecimalMax("1.0")
+            double sectionBreakRatio
     ) {
     }
 
