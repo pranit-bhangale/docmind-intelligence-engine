@@ -1,4 +1,4 @@
-package com.pranit.docmind.rag.excecption;
+package com.pranit.docmind.rag.exception;
 
 import com.pranit.docmind.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;

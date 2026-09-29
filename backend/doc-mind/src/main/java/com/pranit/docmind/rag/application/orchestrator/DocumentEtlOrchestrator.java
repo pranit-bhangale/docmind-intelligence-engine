@@ -2,9 +2,9 @@ package com.pranit.docmind.rag.application.orchestrator;
 
 import com.pranit.docmind.document.domain.entity.DocumentType;
 import com.pranit.docmind.rag.application.enricher.DocumentEnricher;
-import com.pranit.docmind.rag.excecption.UnsupportedFileFormatException;
-import com.pranit.docmind.rag.properties.RagProperties;
+import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
 import com.pranit.docmind.shared.domain.Metadata;
+import com.pranit.docmind.shared.properties.RagProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.ExtractedTextFormatter;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public final class DocumentEtlProcessor {
+public final class DocumentEtlOrchestrator {
 
     private final RagProperties properties;
     private final DocumentEnricher documentEnricher;

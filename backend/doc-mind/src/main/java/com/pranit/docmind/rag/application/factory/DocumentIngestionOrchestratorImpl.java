@@ -1,9 +1,9 @@
 package com.pranit.docmind.rag.application.factory;
 
 import com.pranit.docmind.document.domain.entity.DocumentType;
-import com.pranit.docmind.rag.api.DocumentPipeline;
-import com.pranit.docmind.rag.application.orchestrator.DocumentEtlProcessor;
-import com.pranit.docmind.rag.excecption.UnsupportedFileFormatException;
+import com.pranit.docmind.rag.api.IngestionOrchestrator;
+import com.pranit.docmind.rag.application.orchestrator.DocumentEtlOrchestrator;
+import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
 import com.pranit.docmind.shared.domain.Metadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -13,14 +13,14 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-public final class DocumentPipelineImpl implements DocumentPipeline {
+public final class DocumentIngestionOrchestratorImpl implements IngestionOrchestrator {
 
-    private final DocumentEtlProcessor etlProcessor;
+    private final DocumentEtlOrchestrator orchestrator;
 
     @Override
     public long process(final Metadata metadata, final Resource resource) {
         final var type = getType(resource);
-        return etlProcessor.process(metadata, resource, type);
+        return orchestrator.process(metadata, resource, type);
     }
 
     private DocumentType getType(final Resource resource) {

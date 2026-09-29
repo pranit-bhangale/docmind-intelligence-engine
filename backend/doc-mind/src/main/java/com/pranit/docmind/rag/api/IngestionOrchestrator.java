@@ -4,6 +4,7 @@ import com.pranit.docmind.shared.domain.Metadata;
 import org.springframework.core.io.Resource;
 
 @FunctionalInterface
-public interface DocumentPipeline {
+public interface IngestionOrchestrator {
+
     long process(Metadata metadata, Resource resource);
 }

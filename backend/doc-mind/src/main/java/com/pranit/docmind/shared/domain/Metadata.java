@@ -7,6 +7,7 @@ import java.util.UUID;
 @Builder
 public record Metadata(
         UUID documentId,
-        String fileName
+        String fileName,
+        long chunkCreated
 ) {
 }

@@ -1,4 +1,4 @@
-package com.pranit.docmind.rag.properties;
+package com.pranit.docmind.shared.properties;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;

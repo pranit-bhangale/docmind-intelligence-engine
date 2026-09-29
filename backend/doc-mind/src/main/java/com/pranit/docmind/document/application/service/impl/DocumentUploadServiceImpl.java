@@ -9,7 +9,7 @@ import com.pranit.docmind.document.domain.entity.FileStatus;
 import com.pranit.docmind.document.domain.repository.DocumentRepository;
 import com.pranit.docmind.document.exception.DocumentAlreadyExistsException;
 import com.pranit.docmind.document.exception.DocumentProcessingException;
-import com.pranit.docmind.rag.api.DocumentPipeline;
+import com.pranit.docmind.rag.api.IngestionOrchestrator;
 import com.pranit.docmind.shared.domain.Metadata;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
 import com.pranit.docmind.shared.helper.SecurityContext;
@@ -28,10 +28,10 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DocumentServiceImpl implements DocumentUploadService {
+public class DocumentUploadServiceImpl implements DocumentUploadService {
 
     private final DocumentRepository documentRepository;
-    private final DocumentPipeline pipeline;
+    private final IngestionOrchestrator orchestrator;
     private final UserValidationService userValidationService;
     private final DocumentStatusService documentStatusService;
 
@@ -59,7 +59,7 @@ public class DocumentServiceImpl implements DocumentUploadService {
                 .fileName(docMetadata.getFileName())
                 .build();
         final Resource resource = file.getResource();
-        final long chunkSize = pipeline.process(metadata, resource);
+        final long chunkSize = orchestrator.process(metadata, resource);
         if (chunkSize <= 0) {
             documentStatusService.markFailed(docMetadata.getDocumentId());
             throw new DocumentProcessingException("No chunks were created");
