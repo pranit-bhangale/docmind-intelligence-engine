@@ -4,10 +4,12 @@ import com.pranit.docmind.document.domain.entity.DocumentMetadata;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.UUID;
+
 @UtilityClass
 public class DocumentSpecification {
 
-    public static Specification<DocumentMetadata> belongsToUser(final String userId) {
+    public static Specification<DocumentMetadata> belongsToUser(final UUID userId) {
         return (root, query, cb) ->
                 cb.equal(root.get("userId"), userId);
     }

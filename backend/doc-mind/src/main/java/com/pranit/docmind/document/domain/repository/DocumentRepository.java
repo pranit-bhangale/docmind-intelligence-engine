@@ -3,6 +3,7 @@ package com.pranit.docmind.document.domain.repository;
 import com.pranit.docmind.document.domain.entity.DocumentMetadata;
 import com.pranit.docmind.document.domain.entity.FileStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID> {
+public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID>, JpaSpecificationExecutor<DocumentMetadata> {
 
     boolean existsByUserIdAndFileName(UUID userId, String fileName);
 
@@ -32,5 +33,7 @@ public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID
                 DELETE FROM DocumentMetadata d
                 WHERE d.documentId = :documentId
             """)
-    int rollbackDocumentMetadata(@Param("documentId") UUID documentId);
+    void rollbackDocumentMetadata(@Param("documentId") UUID documentId);
+
+    Optional<DocumentMetadata> findByDocumentIdAndUser_UserId(UUID documentId, UUID userId);
 }
