@@ -10,7 +10,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record SpringAiProperties(
         ChatProperties chat,
         @Valid
-        Rewrite rewrite
+        Rewrite rewrite,
+        @Valid
+        Enrich enrich
 ) {
 
     public record ChatProperties(
@@ -20,6 +22,13 @@ public record SpringAiProperties(
     }
 
     public record Rewrite(
+            String apiKey,
+            String baseUrl,
+            @Valid Chat chat
+    ) {
+    }
+
+    public record Enrich(
             String apiKey,
             String baseUrl,
             @Valid Chat chat

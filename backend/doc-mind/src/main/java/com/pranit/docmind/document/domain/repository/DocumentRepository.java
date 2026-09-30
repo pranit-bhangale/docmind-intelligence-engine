@@ -25,4 +25,12 @@ public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID
     void updateFileStatus(@Param("documentId") UUID documentId, @Param("status") FileStatus status);
 
     Optional<DocumentMetadata> findByDocumentId(UUID documentId);
+
+
+    @Modifying
+    @Query("""
+                DELETE FROM DocumentMetadata d
+                WHERE d.documentId = :documentId
+            """)
+    int rollbackDocumentMetadata(@Param("documentId") UUID documentId);
 }

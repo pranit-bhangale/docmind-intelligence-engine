@@ -60,8 +60,8 @@ public class DocumentUploadServiceImpl implements DocumentUploadService {
                 .build();
         final Resource resource = file.getResource();
         final long chunkSize = orchestrator.process(metadata, resource);
-        if (chunkSize <= 0) {
-            documentStatusService.markFailed(docMetadata.getDocumentId());
+        if (chunkSize == -1) {
+            documentStatusService.rollbackDocMetadata(docMetadata.getDocumentId());
             throw new DocumentProcessingException("No chunks were created");
         }
         docMetadata.setChunksCreated(chunkSize);

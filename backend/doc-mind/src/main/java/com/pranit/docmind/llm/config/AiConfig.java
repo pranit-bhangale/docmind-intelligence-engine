@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -55,6 +56,25 @@ public class AiConfig {
 
     @Bean("rewriteChatClient")
     public ChatClient rewriteChatClient(@Qualifier("rewriteChatModel") OpenAiChatModel chatModel) {
+        return ChatClient.builder(chatModel).build();
+    }
+
+    @Bean("enrichChatModel")
+    @Primary
+    public OpenAiChatModel enrichChatModel(SpringAiProperties properties) {
+        final SpringAiProperties.Enrich enrich = properties.enrich();
+        return OpenAiChatModel.builder().options(OpenAiChatOptions.builder()
+                        .apiKey(enrich.apiKey())
+                        .baseUrl(enrich.baseUrl())
+                        .model(enrich.chat().model())
+                        .temperature(enrich.chat().temperature())
+                        .maxTokens(enrich.chat().maxTokens())
+                        .build())
+                .build();
+    }
+
+    @Bean("enrichChatClient")
+    public ChatClient enrichChatClient(@Qualifier("enrichChatModel") OpenAiChatModel chatModel) {
         return ChatClient.builder(chatModel).build();
     }
 

@@ -27,4 +27,10 @@ public class DocumentStatusServiceImpl implements DocumentStatusService {
     public void markFailed(final UUID documentId) {
         documentRepository.updateFileStatus(documentId, FileStatus.FAILED);
     }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void rollbackDocMetadata(final UUID documentId) {
+        documentRepository.rollbackDocumentMetadata(documentId);
+    }
 }

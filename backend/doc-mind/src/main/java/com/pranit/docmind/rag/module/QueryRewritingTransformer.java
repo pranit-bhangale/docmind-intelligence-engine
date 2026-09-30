@@ -30,15 +30,15 @@ public class QueryRewritingTransformer {
             {query}
             """).build();
 
-    private final ChatClient ragChatClient;
+    private final ChatClient rewriteChatClient;
 
-    public QueryRewritingTransformer(@Qualifier("rewriteChatClient") ChatClient ragChatClient) {
-        this.ragChatClient = ragChatClient;
+    public QueryRewritingTransformer(@Qualifier("rewriteChatClient") ChatClient rewriteChatClient) {
+        this.rewriteChatClient = rewriteChatClient;
     }
 
     public String rewriteQuery(final String query) {
         final Prompt prompt = REWRITE_PROMPT.create(Map.of("query", query));
-        final var rewrittenQuery = ragChatClient
+        final var rewrittenQuery = rewriteChatClient
                 .prompt(prompt)
                 .call()
                 .chatResponse();
