@@ -41,8 +41,8 @@ public class AiConfig {
     }
 
     @Bean("rewriteChatModel")
-    public OpenAiChatModel rewriteChatModel(RagProperties properties) {
-        final RagProperties.Rewrite rewrite = properties.rewrite();
+    public OpenAiChatModel rewriteChatModel(SpringAiProperties properties) {
+        final SpringAiProperties.Rewrite rewrite = properties.rewrite();
         return OpenAiChatModel.builder().options(OpenAiChatOptions.builder()
                         .apiKey(rewrite.apiKey())
                         .baseUrl(rewrite.baseUrl())

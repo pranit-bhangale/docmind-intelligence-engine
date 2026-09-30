@@ -1,8 +1,8 @@
 package com.pranit.docmind.rag.application.orchestrator;
 
-import com.pranit.docmind.document.domain.entity.DocumentType;
 import com.pranit.docmind.rag.application.enricher.DocumentEnricher;
 import com.pranit.docmind.rag.application.service.TokenTextSplitter;
+import com.pranit.docmind.rag.domain.DocumentType;
 import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
 import com.pranit.docmind.shared.domain.Metadata;
 import com.pranit.docmind.shared.properties.RagProperties;

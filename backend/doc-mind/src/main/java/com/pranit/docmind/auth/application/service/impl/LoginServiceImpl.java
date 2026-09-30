@@ -1,5 +1,6 @@
 package com.pranit.docmind.auth.application.service.impl;
 
+import com.pranit.docmind.auth.api.SecurityContext;
 import com.pranit.docmind.auth.application.service.LoginService;
 import com.pranit.docmind.auth.application.service.RestoreUserAccount;
 import com.pranit.docmind.auth.domain.dto.LoginRequest;
@@ -15,7 +16,6 @@ import com.pranit.docmind.auth.infrastructure.helper.Generate;
 import com.pranit.docmind.auth.infrastructure.properties.TokenProperties;
 import com.pranit.docmind.auth.infrastructure.security.service.CookieService;
 import com.pranit.docmind.auth.infrastructure.security.service.GenerateToken;
-import com.pranit.docmind.shared.helper.SecurityContext;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

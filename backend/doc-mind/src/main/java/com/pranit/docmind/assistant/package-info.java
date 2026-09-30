@@ -1,6 +1,6 @@
 @ApplicationModule(
         displayName = "ASSISTANT",
-        allowedDependencies = {"shared", "document::api"}
+        allowedDependencies = {"shared", "document::api", "llm::api"}
 )
 package com.pranit.docmind.assistant;
 

@@ -11,8 +11,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public record RagProperties(
         @Valid Chunking chunking,
-        @Valid Retrieval retrieval,
-        @Valid Rewrite rewrite
+        @Valid Retrieval retrieval
 ) {
 
     public record Chunking(
@@ -37,22 +36,6 @@ public record RagProperties(
             @DecimalMin("0.0")
             @DecimalMax("1.0")
             double similarityThreshold
-    ) {
-    }
-
-    public record Rewrite(
-            String apiKey,
-            String baseUrl,
-            @Valid Chat chat
-    ) {
-    }
-
-    public record Chat(
-            String model,
-            @DecimalMin("0.0")
-            @DecimalMax("1.0")
-            double temperature,
-            @Min(1) int maxTokens
     ) {
     }
 }

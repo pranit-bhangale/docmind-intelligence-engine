@@ -1,4 +1,4 @@
-package com.pranit.docmind.document.domain.entity;
+package com.pranit.docmind.rag.domain;
 
 public enum DocumentType {
     JSON,

@@ -1,5 +1,6 @@
 package com.pranit.docmind.document.application.service.impl;
 
+import com.pranit.docmind.auth.api.SecurityContext;
 import com.pranit.docmind.auth.api.UserValidationService;
 import com.pranit.docmind.document.application.service.DocumentStatusService;
 import com.pranit.docmind.document.application.service.DocumentUploadService;
@@ -12,7 +13,6 @@ import com.pranit.docmind.document.exception.DocumentProcessingException;
 import com.pranit.docmind.rag.api.IngestionOrchestrator;
 import com.pranit.docmind.shared.domain.Metadata;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
-import com.pranit.docmind.shared.helper.SecurityContext;
 import com.pranit.docmind.shared.wrapper.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,8 +1,8 @@
 package com.pranit.docmind.rag.application.factory;
 
-import com.pranit.docmind.document.domain.entity.DocumentType;
 import com.pranit.docmind.rag.api.IngestionOrchestrator;
 import com.pranit.docmind.rag.application.orchestrator.DocumentEtlOrchestrator;
+import com.pranit.docmind.rag.domain.DocumentType;
 import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
 import com.pranit.docmind.shared.domain.Metadata;
 import lombok.RequiredArgsConstructor;

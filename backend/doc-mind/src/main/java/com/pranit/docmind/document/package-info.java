@@ -1,6 +1,6 @@
 @ApplicationModule(
         displayName = "Document",
-        allowedDependencies = {"shared", "auth::api"}
+        allowedDependencies = {"shared", "auth::api", "rag::api"}
 )
 package com.pranit.docmind.document;
 

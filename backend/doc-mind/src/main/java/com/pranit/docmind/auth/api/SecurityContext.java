@@ -1,4 +1,4 @@
-package com.pranit.docmind.shared.helper;
+package com.pranit.docmind.auth.api;
 
 import com.pranit.docmind.auth.domain.model.UserDetail;
 import com.pranit.docmind.auth.exception.UnauthorizedException;
