@@ -31,7 +31,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public final class DocumentEtlOrchestrator {
 
-    private static final int STORE_BATCH_SIZE = 100;
+    private static final int STORE_BATCH_SIZE = 20;
     private final RagProperties properties;
     private final DocumentEnricher documentEnricher;
     private final VectorStore vectorStore;

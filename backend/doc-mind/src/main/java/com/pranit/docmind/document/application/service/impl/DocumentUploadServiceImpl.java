@@ -9,7 +9,6 @@ import com.pranit.docmind.document.domain.entity.DocumentMetadata;
 import com.pranit.docmind.document.domain.entity.FileStatus;
 import com.pranit.docmind.document.domain.repository.DocumentRepository;
 import com.pranit.docmind.document.exception.DocumentAlreadyExistsException;
-import com.pranit.docmind.document.exception.DocumentProcessingException;
 import com.pranit.docmind.rag.api.IngestionOrchestrator;
 import com.pranit.docmind.shared.domain.Metadata;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
@@ -62,7 +61,12 @@ public class DocumentUploadServiceImpl implements DocumentUploadService {
         final long chunkSize = orchestrator.process(metadata, resource);
         if (chunkSize == -1) {
             documentStatusService.rollbackDocMetadata(docMetadata.getDocumentId());
-            throw new DocumentProcessingException("No chunks were created");
+            return ApiResponse.<DocumentResponse>builder()
+                    .status(false)
+                    .message("Failed to create indexing. Try uploading again.")
+                    .data(null)
+                    .timestamp(Instant.now())
+                    .build();
         }
         docMetadata.setChunksCreated(chunkSize);
         docMetadata.setFileStatus(FileStatus.INDEXED);
