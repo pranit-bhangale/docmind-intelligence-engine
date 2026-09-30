@@ -1,9 +1,9 @@
 package com.pranit.docmind.assistant.controller;
 
 import com.pranit.docmind.assistant.application.service.AssistantService;
-import com.pranit.docmind.llm.exception.AiServiceUnavailableException;
 import com.pranit.docmind.shared.domain.QueryRequest;
 import com.pranit.docmind.shared.domain.QueryResponse;
+import com.pranit.docmind.shared.exception.AiServiceUnavailableException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

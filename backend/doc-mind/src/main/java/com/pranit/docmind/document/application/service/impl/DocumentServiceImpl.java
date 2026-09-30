@@ -96,7 +96,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     private DocumentMetadata validateAndFetchDocumentById(final UUID documentId) {
         final UUID userId = SecurityContext.getCurrentUserId();
-        return documentRepository.findByDocumentIdAndUser_UserId(documentId, userId)
+        return documentRepository.findByDocumentIdAndUserId(documentId, userId)
                 .orElseThrow(() -> {
                     log.warn("Document with id {} not found for user {}", documentId, userId);
                     return new DocumentNotFoundException("Document not found");

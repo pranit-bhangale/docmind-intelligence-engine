@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -129,4 +129,17 @@ public class GlobalExceptionHandler {
             InternalServerException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request);
     }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(
+            final NoResourceFoundException ex, final HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/swagger-ui/")
+                || uri.equals("/swagger-ui.html")
+                || uri.startsWith("/v3/api-docs")) {
+            return buildResponse(HttpStatus.NOT_FOUND, "Swagger resource not found.", request);
+        }
+        return buildResponse(HttpStatus.NOT_FOUND, "The requested resource was not found.", request);
+    }
+
 }

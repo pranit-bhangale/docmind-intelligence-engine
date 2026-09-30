@@ -1,6 +1,5 @@
-package com.pranit.docmind.llm.exception;
+package com.pranit.docmind.shared.exception;
 
-import com.pranit.docmind.shared.exception.BaseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

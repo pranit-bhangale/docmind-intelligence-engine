@@ -35,5 +35,5 @@ public interface DocumentRepository extends JpaRepository<DocumentMetadata, UUID
             """)
     void rollbackDocumentMetadata(@Param("documentId") UUID documentId);
 
-    Optional<DocumentMetadata> findByDocumentIdAndUser_UserId(UUID documentId, UUID userId);
+    Optional<DocumentMetadata> findByDocumentIdAndUserId(UUID documentId, UUID userId);
 }
