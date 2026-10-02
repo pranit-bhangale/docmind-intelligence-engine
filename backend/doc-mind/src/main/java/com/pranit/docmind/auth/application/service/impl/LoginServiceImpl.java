@@ -1,5 +1,6 @@
 package com.pranit.docmind.auth.application.service.impl;
 
+import com.pranit.docmind.auth.api.SecurityContext;
 import com.pranit.docmind.auth.application.service.LoginService;
 import com.pranit.docmind.auth.application.service.RestoreUserAccount;
 import com.pranit.docmind.auth.domain.dto.LoginRequest;
@@ -12,7 +13,6 @@ import com.pranit.docmind.auth.domain.repository.RefreshTokenRepository;
 import com.pranit.docmind.auth.domain.repository.UserRepository;
 import com.pranit.docmind.auth.exception.UnauthorizedException;
 import com.pranit.docmind.auth.infrastructure.helper.Generate;
-import com.pranit.docmind.auth.infrastructure.helper.SecurityContext;
 import com.pranit.docmind.auth.infrastructure.properties.TokenProperties;
 import com.pranit.docmind.auth.infrastructure.security.service.CookieService;
 import com.pranit.docmind.auth.infrastructure.security.service.GenerateToken;

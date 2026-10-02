@@ -1,0 +1,42 @@
+package com.pranit.docmind.shared.properties;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+@ConfigurationProperties(prefix = "rag")
+@Validated
+public record RagProperties(
+        @Valid Chunking chunking,
+        @Valid Retrieval retrieval
+) {
+
+    public record Chunking(
+            @Min(1) int chunkSize,
+            @Min(0) int chunkOverlap,
+            @Min(0) int minChunkSizeChars,
+            @Min(0) int minChunkLengthToEmbed,
+            @Min(1) int maxNumChunks,
+            boolean keepSeparator,
+            boolean normalizeWhitespace,
+            boolean respectHeadings,
+            boolean headingContext,
+            @DecimalMin("0.0")
+            @DecimalMax("1.0")
+            double sectionBreakRatio
+    ) {
+    }
+
+    public record Retrieval(
+            @Min(1) int topK,
+            @Min(1) int candidateK,
+            @DecimalMin("0.0")
+            @DecimalMax("1.0")
+            double similarityThreshold
+    ) {
+    }
+}
+

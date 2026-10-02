@@ -1,0 +1,45 @@
+package com.pranit.docmind.rag.application.factory;
+
+import com.pranit.docmind.rag.api.IngestionOrchestrator;
+import com.pranit.docmind.rag.application.orchestrator.DocumentEtlOrchestrator;
+import com.pranit.docmind.rag.domain.DocumentType;
+import com.pranit.docmind.rag.exception.UnsupportedFileFormatException;
+import com.pranit.docmind.shared.domain.Metadata;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+
+@Component
+@RequiredArgsConstructor
+public final class DocumentIngestionOrchestratorImpl implements IngestionOrchestrator {
+
+    private final DocumentEtlOrchestrator orchestrator;
+
+    @Override
+    public long process(final Metadata metadata, final Resource resource) {
+        final var type = getType(resource);
+        return orchestrator.process(metadata, resource, type);
+    }
+
+    private DocumentType getType(final Resource resource) {
+        final var name = Objects.requireNonNull
+                (resource.getFilename()).toLowerCase();
+        if (name.endsWith(".pdf")) return DocumentType.PDF;
+        if (name.endsWith(".doc")
+                || name.endsWith(".docx")
+                || name.endsWith(".xls")
+                || name.endsWith(".xlsx")
+                || name.endsWith(".ppt")
+                || name.endsWith(".pptx")
+                || name.endsWith(".html")
+                || name.endsWith(".htm")
+                || name.endsWith(".xml")
+                || name.endsWith(".csv")
+                || name.endsWith(".md")
+                || name.endsWith(".json")
+                || name.endsWith(".txt")) return DocumentType.TIKA;
+        throw new UnsupportedFileFormatException("Unsupported file: " + name);
+    }
+}

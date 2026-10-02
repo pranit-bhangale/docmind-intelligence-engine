@@ -1,5 +1,6 @@
 package com.pranit.docmind.auth.application.service.impl;
 
+import com.pranit.docmind.auth.api.SecurityContext;
 import com.pranit.docmind.auth.application.mapper.UserMapper;
 import com.pranit.docmind.auth.application.service.UserService;
 import com.pranit.docmind.auth.application.specification.UserSpecification;
@@ -16,7 +17,6 @@ import com.pranit.docmind.auth.exception.PasswordValidationException;
 import com.pranit.docmind.auth.exception.RoleAlreadyAssignedException;
 import com.pranit.docmind.auth.exception.RoleNotFoundException;
 import com.pranit.docmind.auth.exception.UserNotExistsException;
-import com.pranit.docmind.auth.infrastructure.helper.SecurityContext;
 import com.pranit.docmind.shared.exception.DuplicateResourceException;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
 import com.pranit.docmind.shared.wrapper.PageResponse;
