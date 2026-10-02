@@ -1,6 +1,9 @@
 spring:
   application:
     name: docmind-intelligence-engine
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration
   threads:
     virtual:
       enabled: true
@@ -80,7 +83,14 @@ spring:
       memory:
         repository:
           jdbc:
-            initialize-schema: always
+            initialize-schema: never
+    ollama:
+      base-url: ${OLLAMA_BASE_URL}
+      chat:
+        model: ${OLLAMA_CHAT_MODEL}
+        options:
+          temperature: 0.2
+          max-completion-tokens: 2048
     openai:
       api-key: ${CHAT_KEY}
       base-url: ${CHAT_BASE_URL}
@@ -93,6 +103,7 @@ spring:
         base-url: ${EMBEDDING_BASE_URL}
         model: ${EMBEDDING_MODEL}
         dimensions: 2048
+      timeout: 120s
       rewrite:
         api-key: ${REWRITE_KEY}
         base-url: ${REWRITE_BASE_URL}
@@ -195,7 +206,6 @@ docmind:
     allowed-headers:
       - Content-Type
       - X-Api-Version
-      - X-API-Version
       - X-Conversation-ID
       - Accept
       - Origin
@@ -214,8 +224,8 @@ logging:
   file:
     name: ${LOG_PATH}
   level:
-    root: ${LOG_LEVEL_ROOT:INFO}
-    com.pranit.docmind: ${DOCMIND_LOG_LEVEL:INFO}
+    root: ${LOG_LEVEL_ROOT}
+    com.pranit.docmind: ${DOCMIND_LOG_LEVEL}
   logback:
     rollingpolicy:
       file-name-pattern: ${LOG_PATH}.%d{yyyy-MM-dd}.%i.log.gz

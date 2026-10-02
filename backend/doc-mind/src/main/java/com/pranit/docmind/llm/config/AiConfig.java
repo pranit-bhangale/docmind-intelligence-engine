@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -69,6 +70,10 @@ public class AiConfig {
                         .model(enrich.chat().model())
                         .temperature(enrich.chat().temperature())
                         .maxTokens(enrich.chat().maxTokens())
+                        .extraBody(Map.of("chat_template_kwargs", Map.of("enable_thinking", false)))
+                        .responseFormat(OpenAiChatModel.ResponseFormat.builder()
+                                .type(OpenAiChatModel.ResponseFormat.Type.JSON_OBJECT)
+                                .build())
                         .build())
                 .build();
     }

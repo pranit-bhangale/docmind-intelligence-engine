@@ -33,7 +33,7 @@ public final class ExtractClaimImpl implements ExtractClaim {
 
     @Override
     public UUID getUserIdFromRefreshToken(final Claims claims) {
-        final String userId = claims.getId();
+        final String userId = claims.getSubject();
         return UUID.fromString(userId);
     }
 
