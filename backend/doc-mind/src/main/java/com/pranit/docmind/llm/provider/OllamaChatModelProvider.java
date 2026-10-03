@@ -29,6 +29,7 @@ public class OllamaChatModelProvider implements ChatModelStrategy {
 
     @Override
     public QueryResponse getResponse(final String query, final UUID conversationId, final Metadata metadata, final QueryRequest.Options options) {
+        final long startTime = System.currentTimeMillis();
         final var context = orchestrator.execute(metadata, query, options);
         final var chatResponse = executor.execute(context.context(), conversationId);
         final String response = Optional.ofNullable(chatResponse)
@@ -36,8 +37,11 @@ public class OllamaChatModelProvider implements ChatModelStrategy {
                 .map(Generation::getOutput)
                 .map(AssistantMessage::getText)
                 .orElseThrow(() -> new IllegalStateException("LLM returned an empty response"));
+        final long duration = System.currentTimeMillis() - startTime;
+
         return QueryResponse.builder()
                 .content(response)
+                .responseTime(duration + "ms")
                 .citations(context.citations())
                 .build();
     }

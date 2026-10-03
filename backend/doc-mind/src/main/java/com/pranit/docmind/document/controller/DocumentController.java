@@ -1,6 +1,6 @@
 package com.pranit.docmind.document.controller;
 
-import com.drew.lang.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import com.pranit.docmind.document.application.service.DocumentService;
 import com.pranit.docmind.document.application.service.DocumentUploadService;
 import com.pranit.docmind.document.domain.dto.DocumentResponse;

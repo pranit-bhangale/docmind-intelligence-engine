@@ -13,12 +13,10 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.Resource;
 
 import java.util.List;
 import java.util.Map;
@@ -28,13 +26,14 @@ import java.util.Map;
 @EnableConfigurationProperties({AdvisorProperties.class, RagProperties.class, SpringAiProperties.class})
 public class AiConfig {
 
-    @Value("classpath:prompt/systemPrompt.st")
-    private Resource systemPrompt;
+    private static final String DEFAULT_SYSTEM_PROMPT = """
+            You are DocMind Intelligence Engine, an AI document assistant designed to analyze multi-format enterprise documents and provide accurate, context-grounded answers.
+            """;
 
     @Bean("chatClient")
     public ChatClient chatClient(ChatClient.Builder builder, List<Advisor> advisors, SpringAiProperties properties) {
         return builder
-                .defaultSystem(system -> system.text(this.systemPrompt))
+                .defaultSystem(DEFAULT_SYSTEM_PROMPT)
                 .defaultAdvisors(advisors)
                 .defaultOptions(OpenAiChatOptions.builder()
                         .temperature(properties.chat().temperature())

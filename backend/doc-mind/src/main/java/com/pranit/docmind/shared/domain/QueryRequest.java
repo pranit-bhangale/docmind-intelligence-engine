@@ -27,8 +27,17 @@ public record QueryRequest(
             @NotNull(message = "Query type is required")
             QueryType queryType,
             @Valid
-            RetrievalOptions retrieval
+            RetrievalOptions retrieval,
+            Boolean enableQueryRewriting,
+            Boolean enableRag
     ) {
+        public boolean isQueryRewritingEnabled() {
+            return enableQueryRewriting == null || enableQueryRewriting;
+        }
+
+        public boolean isRagEnabled() {
+            return enableRag == null || enableRag;
+        }
     }
 
     public record RetrievalOptions(
