@@ -71,9 +71,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {isAdmin && (
+        {isAdmin ? (
           /* Admin Operations Navigation */
-          <div className="space-y-1 pb-2 border-b border-border/50">
+          <div className="space-y-1">
             {!isCollapsed && (
               <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 mb-2">
                 Operations & Management
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {adminNavItems.map((item) => {
                 const isActive =
                   location.pathname === item.path ||
-                  (item.path === '/dashboard' && location.pathname === '/overview');
+                  (item.path === '/dashboard' && (location.pathname === '/' || location.pathname === '/overview'));
                 return (
                   <button
                     key={item.path}
@@ -104,10 +104,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               })}
             </nav>
           </div>
+        ) : (
+          /* User Knowledge Base Workspace Section */
+          <KnowledgeSection isCollapsed={isCollapsed} />
         )}
-
-        {/* Knowledge Base Workspace Section */}
-        <KnowledgeSection isCollapsed={isCollapsed} />
       </div>
 
       {/* Footer Branding */}

@@ -221,6 +221,50 @@ export const TopNav: React.FC<TopNavProps> = ({
                       Cosine similarity score threshold range: 0.0 to 1.0.
                     </p>
                   </div>
+
+                  {/* 4. Vector RAG Retrieval (Always Enabled By Default) */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                    <div>
+                      <div className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                        <span>Vector RAG Retrieval</span>
+                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-400">
+                          Always Active
+                        </span>
+                      </div>
+                      <div className="text-[9.5px] text-muted-foreground">Context grounding on indexed documents is enabled</div>
+                    </div>
+                  </div>
+
+                  {/* 5. Enable Query Rewriting Toggle */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                    <div>
+                      <div className="text-[11px] font-semibold text-foreground">Query Transformer Optimization</div>
+                      <div className="text-[9.5px] text-muted-foreground">Rewrite query semantically before searching</div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={ragSettings.enableQueryRewriting ?? true}
+                        onChange={(e) => updateRagSettings({ enableQueryRewriting: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-8 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+
+                  {/* Save Settings Action Button */}
+                  <div className="pt-2 border-t border-border/60">
+                    <Button
+                      size="xs"
+                      className="w-full justify-center text-xs font-semibold h-7"
+                      onClick={() => {
+                        updateRagSettings(ragSettings);
+                        setIsRagSettingsOpen(false);
+                      }}
+                    >
+                      Save Settings for All Chats
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

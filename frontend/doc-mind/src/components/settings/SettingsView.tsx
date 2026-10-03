@@ -118,7 +118,7 @@ export const SettingsView: React.FC = () => {
             </div>
             <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
               <span className="text-muted-foreground">Session Auth</span>
-              <span className="font-semibold text-primary">HttpOnly JWT Cookie</span>
+              <span className="font-semibold text-primary">Asymmetric JWT security</span>
             </div>
           </CardContent>
         </Card>

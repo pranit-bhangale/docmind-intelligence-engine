@@ -71,27 +71,35 @@ export const AppShell: React.FC = () => {
           <main className="flex-1 overflow-hidden relative">
             <Routes>
               <Route path="/" element={isAdmin ? dashboardElement : <Chat />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/overview" element={isAdmin ? dashboardElement : <Chat />} />
-              <Route path="/dashboard" element={isAdmin ? dashboardElement : <Chat />} />
+              <Route path="/chat" element={isAdmin ? <Navigate to="/dashboard" replace /> : <Chat />} />
+              <Route path="/overview" element={isAdmin ? dashboardElement : <Navigate to="/chat" replace />} />
+              <Route path="/dashboard" element={isAdmin ? dashboardElement : <Navigate to="/chat" replace />} />
               <Route
                 path="/tenants"
                 element={
-                  <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-                    <TenantManagementView
-                      onOpenRegisterModal={() => setIsRegisterTenantOpen(true)}
-                    />
-                  </div>
+                  isAdmin ? (
+                    <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+                      <TenantManagementView
+                        onOpenRegisterModal={() => setIsRegisterTenantOpen(true)}
+                      />
+                    </div>
+                  ) : (
+                    <Navigate to="/chat" replace />
+                  )
                 }
               />
               <Route
                 path="/users"
                 element={
-                  <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-                    <UserManagementView
-                      onOpenAddUserModal={() => setIsAddUserOpen(true)}
-                    />
-                  </div>
+                  isAdmin ? (
+                    <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+                      <UserManagementView
+                        onOpenAddUserModal={() => setIsAddUserOpen(true)}
+                      />
+                    </div>
+                  ) : (
+                    <Navigate to="/chat" replace />
+                  )
                 }
               />
               <Route
@@ -102,7 +110,7 @@ export const AppShell: React.FC = () => {
                   </div>
                 }
               />
-              <Route path="/app/*" element={<Chat />} />
+              <Route path="/app/*" element={isAdmin ? <Navigate to="/dashboard" replace /> : <Chat />} />
               <Route path="*" element={<Navigate to={isAdmin ? "/dashboard" : "/chat"} replace />} />
             </Routes>
           </main>

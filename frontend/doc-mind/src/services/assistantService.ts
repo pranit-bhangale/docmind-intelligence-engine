@@ -9,6 +9,8 @@ export interface QueryRequest {
       topK?: number;
       similarityThreshold?: number;
     };
+    enableQueryRewriting?: boolean;
+    enableRag?: boolean;
   };
 }
 
@@ -116,8 +118,10 @@ export const assistantService = {
     const safeConvId = toValidUUID(conversationId);
 
     const queryTypeVal = options?.queryType || 'NORMAL_QA';
-    const topKVal = options?.topK ?? options?.retrieval?.topK ?? 4;
+    const topKVal = options?.topK ?? options?.retrieval?.topK ?? 5;
     const similarityThresholdVal = options?.similarityThreshold ?? options?.retrieval?.similarityThreshold ?? 0.7;
+    const enableQueryRewritingVal = options?.enableQueryRewriting ?? options?.isQueryRewritingEnabled ?? true;
+    const enableRagVal = options?.enableRag ?? options?.isRagEnabled ?? true;
 
     const bodyPayload = {
       query: query || '',
@@ -128,6 +132,8 @@ export const assistantService = {
           topK: topKVal,
           similarityThreshold: similarityThresholdVal,
         },
+        enableQueryRewriting: enableQueryRewritingVal,
+        enableRag: enableRagVal,
       },
     };
 
@@ -212,8 +218,10 @@ export const assistantService = {
     const safeConvId = toValidUUID(conversationId);
 
     const queryTypeVal = options?.queryType || 'NORMAL_QA';
-    const topKVal = options?.topK ?? options?.retrieval?.topK ?? 4;
+    const topKVal = options?.topK ?? options?.retrieval?.topK ?? 5;
     const similarityThresholdVal = options?.similarityThreshold ?? options?.retrieval?.similarityThreshold ?? 0.7;
+    const enableQueryRewritingVal = options?.enableQueryRewriting ?? options?.isQueryRewritingEnabled ?? true;
+    const enableRagVal = options?.enableRag ?? options?.isRagEnabled ?? true;
 
     const bodyPayload = {
       query: query || '',
@@ -224,6 +232,8 @@ export const assistantService = {
           topK: topKVal,
           similarityThreshold: similarityThresholdVal,
         },
+        enableQueryRewriting: enableQueryRewritingVal,
+        enableRag: enableRagVal,
       },
     };
 

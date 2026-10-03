@@ -86,6 +86,8 @@ export interface RagSettings {
   provider: 'NVIDIA' | 'OLLAMA' | 'nvidia' | 'ollama';
   topK: number;
   similarityThreshold: number;
+  enableQueryRewriting: boolean;
+  enableRag: boolean;
 }
 
 

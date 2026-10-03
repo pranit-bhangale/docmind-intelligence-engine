@@ -133,15 +133,42 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [generationMode, setGenerationMode] = useState<'streaming' | 'blocking'>('streaming');
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [ragSettings, setRagSettings] = useState<RagSettings>({
-    provider: 'NVIDIA',
-    topK: 5,
-    similarityThreshold: 0.70,
+  const [ragSettings, setRagSettings] = useState<RagSettings>(() => {
+    try {
+      const saved = localStorage.getItem('docmind_rag_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          provider: parsed.provider || 'NVIDIA',
+          topK: parsed.topK ?? 5,
+          similarityThreshold: parsed.similarityThreshold ?? 0.70,
+          enableQueryRewriting: parsed.enableQueryRewriting ?? true,
+          enableRag: parsed.enableRag ?? true,
+        };
+      }
+    } catch {
+      // ignore
+    }
+    return {
+      provider: 'NVIDIA',
+      topK: 5,
+      similarityThreshold: 0.70,
+      enableQueryRewriting: true,
+      enableRag: true,
+    };
   });
   const pageSize = 5;
 
   const updateRagSettings = useCallback((newSettings: Partial<RagSettings>) => {
-    setRagSettings((prev) => ({ ...prev, ...newSettings }));
+    setRagSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      try {
+        localStorage.setItem('docmind_rag_settings', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
   }, []);
 
   // On Mount / Page Refresh: Fetch user's documents from backend GET /api/documents & sync with localStorage
@@ -522,6 +549,8 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       topK: ragSettings.topK,
       threshold: ragSettings.similarityThreshold,
       similarityThreshold: ragSettings.similarityThreshold,
+      enableQueryRewriting: ragSettings.enableQueryRewriting ?? true,
+      enableRag: ragSettings.enableRag ?? true,
     };
 
     if (generationMode === 'blocking') {
