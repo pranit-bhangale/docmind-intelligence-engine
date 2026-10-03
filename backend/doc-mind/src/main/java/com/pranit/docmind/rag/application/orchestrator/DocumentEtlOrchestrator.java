@@ -36,10 +36,6 @@ public final class DocumentEtlOrchestrator {
     private final DocumentEnricher documentEnricher;
     private final VectorStore vectorStore;
 
-    private static String asString(final Object value) {
-        return value == null ? null : value.toString();
-    }
-
     public long process
             (final Metadata metadata, final Resource resource, final DocumentType type) {
         final var documents = extract(resource, type);
@@ -77,6 +73,54 @@ public final class DocumentEtlOrchestrator {
         return splitter.transform(documents);
     }
 
+    private List<Document> enrichWithAi(final List<Document> chunks) {
+        final List<DocumentChunk> input = chunks.stream().map(this::toDocumentChunk).toList();
+        final List<EnrichedChunk> output = documentEnricher.enrich(input);
+        if (output.size() != chunks.size()) {
+            throw new IllegalStateException
+                    ("Enricher returned " + output.size() + " chunks for " + chunks.size() + " inputs");
+        }
+        final List<Document> result = new ArrayList<>(chunks.size());
+        for (int i = 0; i < chunks.size(); i++) {
+            final Document original = chunks.get(i);
+            final EnrichedChunk enriched = output.get(i);
+            final Map<String, Object> metadata = new LinkedHashMap<>(original.getMetadata());
+            final String section = enriched.section();
+            final String header = enriched.header();
+            final String content = original.getText();
+            if (enriched.section() != null) metadata.put(DocMetadata.SECTION, enriched.section());
+            if (enriched.header() != null) metadata.put(DocMetadata.HEADER, enriched.header());
+            final String embeddingText = """
+                    Section: %s
+                    Header: %s
+                    
+                    Content:
+                    %s
+                    """.formatted(
+                    section != null ? section : "",
+                    header != null ? header : "",
+                    content
+            );
+            result.add(new Document(embeddingText, metadata));
+        }
+        return result;
+    }
+
+    private boolean store(final Metadata metadata, final List<Document> chunks) {
+        try {
+            for (int start = 0; start < chunks.size(); start += STORE_BATCH_SIZE) {
+                final int end = Math.min(start + STORE_BATCH_SIZE, chunks.size());
+                vectorStore.add(chunks.subList(start, end));
+            }
+            return true;
+        } catch (RuntimeException e) {
+            log.error("Vector store failed for documentId: {}. Removing partially stored chunks.",
+                    metadata.documentId(), e);
+            deleteByDocumentId(metadata);
+            return false;
+        }
+    }
+
     private List<Document> extractPdf(final Resource resource) {
         final var pdfReader = new PagePdfDocumentReader
                 (resource, PdfDocumentReaderConfig.builder()
@@ -95,46 +139,12 @@ public final class DocumentEtlOrchestrator {
         return tikaReader.read();
     }
 
-    private List<Document> enrichWithAi(final List<Document> chunks) {
-        final List<DocumentChunk> input = chunks.stream().map(this::toDocumentChunk).toList();
-        final List<EnrichedChunk> output = documentEnricher.enrich(input);
-        if (output.size() != chunks.size()) {
-            throw new IllegalStateException
-                    ("Enricher returned " + output.size() + " chunks for " + chunks.size() + " inputs");
-        }
-        final List<Document> result = new ArrayList<>(chunks.size());
-        for (int i = 0; i < chunks.size(); i++) {
-            final Document original = chunks.get(i);
-            final EnrichedChunk enriched = output.get(i);
-            final Map<String, Object> metadata = new LinkedHashMap<>(original.getMetadata());
-            if (enriched.section() != null) metadata.put(DocMetadata.SECTION, enriched.section());
-            if (enriched.header() != null) metadata.put(DocMetadata.HEADER, enriched.header());
-            result.add(new Document(original.getText(), metadata));
-        }
-        return result;
-    }
-
     private DocumentChunk toDocumentChunk(final Document document) {
         return DocumentChunk.builder()
                 .section(asString(document.getMetadata().get(DocMetadata.SECTION)))
                 .header(asString(document.getMetadata().get(DocMetadata.HEADER)))
                 .content(document.getText())
                 .build();
-    }
-
-    private boolean store(final Metadata metadata, final List<Document> chunks) {
-        try {
-            for (int start = 0; start < chunks.size(); start += STORE_BATCH_SIZE) {
-                final int end = Math.min(start + STORE_BATCH_SIZE, chunks.size());
-                vectorStore.add(chunks.subList(start, end));
-            }
-            return true;
-        } catch (RuntimeException e) {
-            log.error("Vector store failed for documentId: {}. Removing partially stored chunks.",
-                    metadata.documentId(), e);
-            deleteByDocumentId(metadata);
-            return false;
-        }
     }
 
     private void deleteByDocumentId(final Metadata metadata) {
@@ -145,5 +155,9 @@ public final class DocumentEtlOrchestrator {
         } catch (RuntimeException cleanupError) {
             log.warn("Cleanup failed for documentId={}", metadata.documentId(), cleanupError);
         }
+    }
+
+    private static String asString(final Object value) {
+        return value == null ? null : value.toString();
     }
 }

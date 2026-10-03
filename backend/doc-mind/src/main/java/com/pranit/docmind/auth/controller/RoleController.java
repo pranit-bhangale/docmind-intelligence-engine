@@ -39,7 +39,7 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "Forbidden - requires admin privileges")
     })
     @GetMapping(version = "v1")
-    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<List<RoleResponse>> fetchAllRoles() {
         return ResponseEntity.status(HttpStatus.OK).body(roleService.findAllRoles());
     }

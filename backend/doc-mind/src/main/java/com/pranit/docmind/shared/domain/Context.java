@@ -21,6 +21,7 @@ public record Context(
     public record Citation(
             UUID documentId,
             String fileName,
+            String content,
             Long pageNumber,
             Long chunkIndex,
             Long previousChunkIndex,
