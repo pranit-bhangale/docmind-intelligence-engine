@@ -43,21 +43,21 @@ public class DocumentController {
 
     @Operation(summary = "Upload a document", description = "Uploads a document and processes it for vector embedding.")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, version = "v1")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<DocumentResponse>> uploadDocument(@Valid @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED).body(documentUploadService.uploadDocument(file));
     }
 
     @Operation(summary = "Get document by ID", description = "Retrieves a document and its metadata using its unique ID.")
     @GetMapping(value = "/{documentId}", version = "v1")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<DocumentResponse>> fetchDocumentById(@NotNull @PathVariable("documentId") UUID documentId) {
         return ResponseEntity.status(HttpStatus.OK).body(documentService.fetchDocumentById(documentId));
     }
 
     @Operation(summary = "Delete a document", description = "Deletes a document and its associated vector embeddings using its unique ID.")
     @DeleteMapping(value = "/{documentId}/delete", version = "v1")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteDocumentById(@NotNull @PathVariable("documentId") UUID documentId) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(documentService.deleteDocumentById(documentId));
     }
@@ -67,7 +67,7 @@ public class DocumentController {
             description = "Returns a paginated list of document with status filtering, sorting, and keyword search controls."
     )
     @GetMapping(version = "v1")
-    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PageResponse<DocumentResponse>> findAllDocuments(
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
             @RequestParam(name = "size", defaultValue = "5") @Min(1) @Max(5) int size,

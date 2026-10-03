@@ -40,7 +40,7 @@ public class AssistantController {
             summary = "Ask a question about a document",
             description = "Sends a question to the AI assistant and returns a response based on the specified document and conversation context.")
     @PostMapping(value = "/{documentId}/query", version = "v1")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<QueryResponse> getResponse(
             @Valid @RequestBody QueryRequest request, @PathVariable UUID documentId,
             @RequestHeader("X-Conversation-ID") UUID conversationId) {
@@ -53,7 +53,7 @@ public class AssistantController {
             summary = "Stream a response about a document",
             description = "Sends a question to the AI assistant and streams the generated response incrementally using Server-Sent Events (SSE).")
     @PostMapping(value = "/{documentId}/query/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE, version = "v1")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public Flux<ServerSentEvent<String>> streamChat(
             @Valid @RequestBody QueryRequest request, @PathVariable UUID documentId,
             @RequestHeader("X-Conversation-ID") UUID conversationId) {
