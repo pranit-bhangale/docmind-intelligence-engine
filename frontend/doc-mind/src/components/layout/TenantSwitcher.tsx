@@ -49,10 +49,10 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({ onOpenRegisterMo
         )}
       >
         <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-[10px]">
-          {activeTenant?.companyName ? activeTenant.companyName.charAt(0).toUpperCase() : 'T'}
+          {activeTenant?.companyName ? activeTenant.companyName.charAt(0).toUpperCase() : 'D'}
         </div>
-        <span className="truncate max-w-[130px] sm:max-w-[170px] text-foreground font-semibold">
-          {activeTenant ? activeTenant.companyName : isLoadingTenants ? 'Loading...' : 'Workspace'}
+        <span className="truncate max-w-[150px] sm:max-w-[210px] text-foreground font-semibold">
+          {activeTenant ? activeTenant.companyName : isLoadingTenants ? 'Loading...' : 'docmind-intelligence-engine'}
         </span>
         {activeTenant?.status && (
           <Badge status={activeTenant.status} className="hidden lg:inline-flex text-[9px] px-1.5 py-0" />

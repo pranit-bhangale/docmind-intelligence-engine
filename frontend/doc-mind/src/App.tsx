@@ -23,12 +23,7 @@ function App() {
 
               {/* Protected App Shell Routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<AppShell />} />
-                <Route path="/overview" element={<AppShell />} />
-                <Route path="/tenants" element={<AppShell />} />
-                <Route path="/users" element={<AppShell />} />
-                <Route path="/settings" element={<AppShell />} />
-                <Route path="/app/*" element={<AppShell />} />
+                <Route path="/*" element={<AppShell />} />
               </Route>
 
               {/* Catch-all redirect */}

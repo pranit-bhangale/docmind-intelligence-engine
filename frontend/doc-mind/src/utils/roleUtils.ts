@@ -15,7 +15,7 @@ export function formatRoleLabel(roleName?: string): string {
   if (!roleName) return 'User';
   const norm = roleName.toUpperCase().trim();
 
-  if (norm === 'ROLE_PLATFORM_ADMIN' || norm === 'ROLE_SUPER_ADMIN' || norm === 'PLATFORM_ADMIN' || norm === 'SUPER_ADMIN') {
+  if (norm === 'ROLE_PLATFORM_ADMIN' || norm === 'PLATFORM_ADMIN') {
     return 'Platform Admin';
   }
   if (norm === 'ROLE_COMPANY_ADMIN' || norm === 'COMPANY_ADMIN') {

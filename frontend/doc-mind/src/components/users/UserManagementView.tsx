@@ -27,7 +27,7 @@ interface UserManagementViewProps {
 export const UserManagementView: React.FC<UserManagementViewProps> = ({
   onOpenAddUserModal,
 }) => {
-  const { isAuthenticated, canAccessUsers } = useAuth();
+  const { isAuthenticated, canAccessUsers, canAccessTenants } = useAuth();
   const [data, setData] = useState<PageResponse<UserResponse> | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +108,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button size="sm" onClick={onOpenAddUserModal} className="gap-1.5">
-            <Plus className="size-3.5" />
-            Add User Account
-          </Button>
+          {!canAccessTenants && canAccessUsers && (
+            <Button size="sm" onClick={onOpenAddUserModal} className="gap-1.5">
+              <Plus className="size-3.5" />
+              Add User Account
+            </Button>
+          )}
         </div>
       </div>
 

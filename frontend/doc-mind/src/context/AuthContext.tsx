@@ -14,6 +14,7 @@ interface AuthContextType {
   canAccessTenants: boolean;
   canAccessUsers: boolean;
   canAccessRoles: boolean;
+  isAdmin: boolean;
 }
 
 const AUTH_SESSION_KEY = 'docmind_logged_in';
@@ -80,32 +81,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const hasRole = (roleName: string): boolean => {
     if (!user || !user.authorities) return false;
-    const formattedRole = roleName.startsWith('ROLE_') ? roleName : `ROLE_${roleName}`;
+    const cleanName = roleName.replace(/^ROLE_/, '').toUpperCase();
     return user.authorities.some(
-      (auth) => auth.authority === formattedRole || auth.authority === roleName
+      (auth) => auth.authority.replace(/^ROLE_/, '').toUpperCase() === cleanName
     );
   };
 
-  const isSuperAdmin = Boolean(
-    user?.authorities?.some(
-      (auth) =>
-        auth.authority === 'ROLE_SUPER_ADMIN' ||
-        auth.authority === 'SUPER_ADMIN' ||
-        auth.authority === 'ROLE_PLATFORM_ADMIN' ||
-        auth.authority === 'PLATFORM_ADMIN'
-    )
-  );
+  const isSuperAdmin = Boolean(hasRole('PLATFORM_ADMIN'));
 
-  const canAccessTenants = Boolean(
-    isSuperAdmin || hasRole('PLATFORM_ADMIN')
-  );
+  const canAccessTenants = Boolean(hasRole('PLATFORM_ADMIN'));
 
   const canAccessUsers = Boolean(
     hasRole('COMPANY_ADMIN') || hasRole('ADMIN')
   );
 
   const canAccessRoles = Boolean(
-    hasRole('ADMIN') || hasRole('COMPANY_ADMIN')
+    hasRole('COMPANY_ADMIN') || hasRole('ADMIN')
+  );
+
+  const isAdmin = Boolean(
+    hasRole('PLATFORM_ADMIN') || hasRole('COMPANY_ADMIN') || hasRole('ADMIN')
   );
 
   return (
@@ -122,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canAccessTenants,
         canAccessUsers,
         canAccessRoles,
+        isAdmin,
       }}
     >
       {children}
