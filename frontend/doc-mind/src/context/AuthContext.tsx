@@ -51,6 +51,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [fetchCurrentUser]);
 
+  // Automated background token refresh every 14 minutes when logged in
+  useEffect(() => {
+    if (!user) return;
+
+    const FOURTEEN_MINUTES_MS = 14 * 60 * 1000;
+    const timer = setInterval(async () => {
+      try {
+        await authService.refreshToken();
+        console.log('[AuthContext] Access token refreshed automatically (14-minute timer)');
+      } catch (err) {
+        console.warn('[AuthContext] Automatic 14-minute token refresh failed:', err);
+      }
+    }, FOURTEEN_MINUTES_MS);
+
+    return () => clearInterval(timer);
+  }, [user]);
+
   const login = async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {

@@ -71,6 +71,7 @@ export const AppShell: React.FC = () => {
           <main className="flex-1 overflow-hidden relative">
             <Routes>
               <Route path="/" element={isAdmin ? dashboardElement : <Chat />} />
+              <Route path="/chat" element={<Chat />} />
               <Route path="/overview" element={isAdmin ? dashboardElement : <Chat />} />
               <Route path="/dashboard" element={isAdmin ? dashboardElement : <Chat />} />
               <Route
@@ -101,8 +102,8 @@ export const AppShell: React.FC = () => {
                   </div>
                 }
               />
-              <Route path="/app/*" element={isAdmin ? <Navigate to="/dashboard" replace /> : <Chat />} />
-              <Route path="*" element={<Navigate to={isAdmin ? "/dashboard" : "/"} replace />} />
+              <Route path="/app/*" element={<Chat />} />
+              <Route path="*" element={<Navigate to={isAdmin ? "/dashboard" : "/chat"} replace />} />
             </Routes>
           </main>
         </div>
