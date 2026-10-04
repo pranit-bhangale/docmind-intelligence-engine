@@ -47,9 +47,24 @@ public class NvidiaChatModelProvider implements ChatModelStrategy {
     }
 
     @Override
-    public Flux<String> getStreamResponse(final String query, final UUID conversationId, final Metadata metadata, final QueryRequest.Options options) {
+    public Flux<QueryResponse> getStreamResponse(final String query, final UUID conversationId, final Metadata metadata, final QueryRequest.Options options) {
+        final long startTime = System.currentTimeMillis();
         final var context = orchestrator.execute(metadata, query, options);
-        return executor.stream(context.context(), conversationId);
+        final var citations = context.citations();
+
+        return executor.stream(context.context(), conversationId)
+                .map(chunk -> QueryResponse.builder()
+                        .content(chunk)
+                        .citations(citations)
+                        .build())
+                .concatWith(Flux.defer(() -> {
+                    final long duration = System.currentTimeMillis() - startTime;
+                    return Flux.just(QueryResponse.builder()
+                            .content("")
+                            .responseTime(duration + "ms")
+                            .citations(citations)
+                            .build());
+                }));
     }
 
     @Override

@@ -54,19 +54,19 @@ public class AssistantController {
             description = "Sends a question to the AI assistant and streams the generated response incrementally using Server-Sent Events (SSE).")
     @PostMapping(value = "/{documentId}/query/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE, version = "v1")
     @PreAuthorize("hasRole('USER')")
-    public Flux<ServerSentEvent<String>> streamChat(
+    public Flux<ServerSentEvent<QueryResponse>> streamChat(
             @Valid @RequestBody QueryRequest request, @PathVariable UUID documentId,
             @RequestHeader("X-Conversation-ID") UUID conversationId) {
         return this.assistantService.getStreamResponse
                         (request.provider(), request.query(), conversationId, documentId, request.options())
-                .map(chunk -> ServerSentEvent.<String>builder()
+                .map(response -> ServerSentEvent.<QueryResponse>builder()
                         .event("message")
-                        .data(chunk)
+                        .data(response)
                         .build())
                 .onErrorResume(AiServiceUnavailableException.class, ex ->
-                        Flux.just(ServerSentEvent.<String>builder()
+                        Flux.just(ServerSentEvent.<QueryResponse>builder()
                                 .event("error")
-                                .data(ex.getMessage())
+                                .data(QueryResponse.builder().content(ex.getMessage()).build())
                                 .build()));
     }
 }

@@ -104,6 +104,42 @@ export function parseSseChunk(buffer: string): { events: SseMessage[]; remaining
   return { events, remaining };
 }
 
+export function mapRawCitations(rawCitations: any[], safeDocId: string): Citation[] {
+  if (!Array.isArray(rawCitations)) return [];
+  return rawCitations.map((c: any) => {
+    const scoreVal = c.similarityScore ?? c.score;
+    const scorePercent =
+      scoreVal !== undefined && scoreVal !== null
+        ? `${Math.round((scoreVal > 1 ? scoreVal / 100 : scoreVal) * 100)}% match`
+        : '';
+    const fullContent = c.content || c.snippet || c.text || '';
+    const shortSnippet = fullContent
+      ? fullContent.length > 120
+        ? fullContent.slice(0, 120) + '...'
+        : fullContent
+      : scorePercent;
+
+    const pageInfo = c.pageNumber !== undefined && c.pageNumber !== null ? `Page ${c.pageNumber}` : '';
+    const chunkInfo = c.chunkIndex !== undefined && c.chunkIndex !== null ? `Chunk #${c.chunkIndex}` : '';
+    const rangeStr = c.chunkRange || [pageInfo, chunkInfo].filter(Boolean).join(' • ') || 'Vector Chunk';
+
+    return {
+      docId: String(c.documentId || c.docId || safeDocId),
+      docName: String(c.fileName || c.docName || 'Document'),
+      chunkRange: rangeStr,
+      snippet: shortSnippet,
+      section: c.section,
+      header: c.header,
+      content: fullContent,
+      pageNumber: c.pageNumber,
+      chunkIndex: c.chunkIndex,
+      previousChunkIndex: c.previousChunkIndex,
+      nextChunkIndex: c.nextChunkIndex,
+      similarityScore: scoreVal,
+    };
+  });
+}
+
 export const assistantService = {
   async queryDocument(
     documentId: string,
@@ -162,36 +198,7 @@ export const assistantService = {
     const rawJson = await response.json();
     const answerText = rawJson.content || rawJson.answer || '';
     const rawCitations = rawJson.citations || rawJson.sources || [];
-    const sourcesList: Citation[] = Array.isArray(rawCitations)
-      ? rawCitations.map((c: any) => {
-          const scoreVal = c.similarityScore ?? c.score;
-          const scorePercent =
-            scoreVal !== undefined && scoreVal !== null
-              ? `${Math.round((scoreVal > 1 ? scoreVal / 100 : scoreVal) * 100)}% match`
-              : '';
-          const fullContent = c.content || c.snippet || c.text || '';
-          const shortSnippet = fullContent
-            ? fullContent.length > 120
-              ? fullContent.slice(0, 120) + '...'
-              : fullContent
-            : scorePercent;
-
-          return {
-            docId: String(c.documentId || c.docId || safeDocId),
-            docName: String(c.fileName || c.docName || 'Document'),
-            chunkRange: c.chunkRange || (c.chunkIndex !== undefined ? `Chunk #${c.chunkIndex}` : 'Vector Chunk'),
-            snippet: shortSnippet,
-            section: c.section,
-            header: c.header,
-            content: fullContent,
-            pageNumber: c.pageNumber,
-            chunkIndex: c.chunkIndex,
-            previousChunkIndex: c.previousChunkIndex,
-            nextChunkIndex: c.nextChunkIndex,
-            similarityScore: c.similarityScore,
-          };
-        })
-      : [];
+    const sourcesList: Citation[] = mapRawCitations(rawCitations, safeDocId);
 
     return {
       answer: answerText,
@@ -206,8 +213,8 @@ export const assistantService = {
     documentId: string,
     conversationId: string,
     query: string,
-    onChunk: (chunk: string) => void,
-    onComplete: () => void,
+    onChunk: (chunk: string, meta?: { citations?: Citation[]; responseTime?: string }) => void,
+    onComplete: (meta?: { citations?: Citation[]; responseTime?: string }) => void,
     onError: (error: Error) => void,
     provider = 'NVIDIA',
     options?: any
@@ -264,6 +271,8 @@ export const assistantService = {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
+      let latestCitations: Citation[] | undefined;
+      let latestResponseTime: string | undefined;
 
       const processEvents = (events: SseMessage[]) => {
         for (const sse of events) {
@@ -282,6 +291,9 @@ export const assistantService = {
           }
 
           let tokenChunk = rawData;
+          let eventCitations: Citation[] | undefined;
+          let eventResponseTime: string | undefined;
+
           const trimmedPayload = rawData.trim();
           if (trimmedPayload.startsWith('{') && trimmedPayload.endsWith('}')) {
             try {
@@ -291,11 +303,25 @@ export const assistantService = {
               if (jsonText !== undefined && jsonText !== null) {
                 tokenChunk = String(jsonText);
               }
+
+              const rawC = parsed.citations || parsed.sources;
+              if (Array.isArray(rawC) && rawC.length > 0) {
+                eventCitations = mapRawCitations(rawC, safeDocId);
+                latestCitations = eventCitations;
+              }
+
+              if (parsed.responseTime) {
+                eventResponseTime = String(parsed.responseTime);
+                latestResponseTime = eventResponseTime;
+              }
             } catch {}
           }
 
           if (tokenChunk !== '' && onChunk) {
-            onChunk(tokenChunk);
+            onChunk(tokenChunk, {
+              citations: eventCitations || latestCitations,
+              responseTime: eventResponseTime || latestResponseTime,
+            });
           }
         }
       };
@@ -316,7 +342,7 @@ export const assistantService = {
         processEvents(events);
       }
 
-      onComplete();
+      onComplete({ citations: latestCitations, responseTime: latestResponseTime });
     } catch (err) {
       onError(err instanceof Error ? err : new Error(String(err)));
     }

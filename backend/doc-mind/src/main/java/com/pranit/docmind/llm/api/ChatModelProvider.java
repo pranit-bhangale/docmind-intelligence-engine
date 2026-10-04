@@ -13,6 +13,6 @@ public interface ChatModelProvider {
     QueryResponse getResponse
             (Provider provider, String query, UUID conversationId, Metadata metadata, QueryRequest.Options options);
 
-    Flux<String> getStreamResponse
+    Flux<QueryResponse> getStreamResponse
             (Provider provider, String query, UUID conversationId, Metadata metadata, QueryRequest.Options options);
 }

@@ -530,13 +530,6 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const firstDoc = attachedDocs[0];
     const targetDocId = firstDoc?.id || 'default-doc';
 
-    const citations = attachedDocs.map((d, idx) => ({
-      docId: d.id,
-      docName: d.name,
-      chunkRange: `Chunks ${idx * 2 + 1}–${idx * 2 + 3}`,
-      snippet: d.chunks?.[0]?.text || `Ingested snippet from ${d.name}`,
-    }));
-
     const assistantMsgId = `msg-${Date.now() + 1}`;
     const timestampStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -570,6 +563,8 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           }
           if (res.sources && res.sources.length > 0) {
             resSources = res.sources;
+          } else if (res.citations && res.citations.length > 0) {
+            resSources = res.citations;
           }
         }
       } catch {
@@ -583,7 +578,7 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         fullAnswerText = generateSmartDocumentResponse(userText, attachedDocs, ragSettings);
       }
 
-      const finalSources = resSources.length > 0 ? resSources : (citations.length > 0 ? citations : undefined);
+      const finalSources = resSources.length > 0 ? resSources : undefined;
 
       const assistantMsg: ChatMessageItem = {
         id: assistantMsgId,
@@ -614,7 +609,7 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         })
       );
     } else {
-      // Streaming Mode: Execute assistantService.streamQueryDocument with character streaming fallback
+      // Streaming Mode: Execute assistantService.streamQueryDocument
       setIsStreaming(true);
 
       const initialAssistantMsg: ChatMessageItem = {
@@ -624,8 +619,8 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         timestamp: timestampStr,
         status: 'streaming',
         queryType: queryTypeParam,
-        grounded: citations.length > 0,
-        sources: citations.length > 0 ? citations : undefined,
+        grounded: false,
+        sources: undefined,
         ragConfig: {
           provider: ragSettings.provider,
           topK: ragSettings.topK,
@@ -652,7 +647,7 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         targetDocId,
         activeConversationId,
         userText,
-        (chunk) => {
+        (chunk, meta) => {
           receivedStream = true;
           streamedText += chunk;
           setConversations((prev) =>
@@ -660,27 +655,48 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               if (c.id === activeConversationId) {
                 return {
                   ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === assistantMsgId ? { ...m, text: streamedText, status: 'streaming' } : m
-                  ),
+                  messages: c.messages.map((m) => {
+                    if (m.id === assistantMsgId) {
+                      const newSources = meta?.citations && meta.citations.length > 0 ? meta.citations : m.sources;
+                      return {
+                        ...m,
+                        text: streamedText,
+                        status: 'streaming',
+                        sources: newSources,
+                        grounded: !!newSources && newSources.length > 0,
+                        executionTime: meta?.responseTime || m.executionTime,
+                      };
+                    }
+                    return m;
+                  }),
                 };
               }
               return c;
             })
           );
         },
-        () => {
+        (meta) => {
           const endTime = performance.now();
-          const calcTime = `${((endTime - startTime) / 1000).toFixed(2)}s`;
+          const calcTime = meta?.responseTime || `${((endTime - startTime) / 1000).toFixed(2)}s`;
           setIsStreaming(false);
           setConversations((prev) =>
             prev.map((c) => {
               if (c.id === activeConversationId) {
                 return {
                   ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === assistantMsgId ? { ...m, status: 'complete', executionTime: calcTime } : m
-                  ),
+                  messages: c.messages.map((m) => {
+                    if (m.id === assistantMsgId) {
+                      const finalSources = meta?.citations && meta.citations.length > 0 ? meta.citations : m.sources;
+                      return {
+                        ...m,
+                        status: 'complete',
+                        executionTime: calcTime,
+                        sources: finalSources,
+                        grounded: !!finalSources && finalSources.length > 0,
+                      };
+                    }
+                    return m;
+                  }),
                 };
               }
               return c;

@@ -11,5 +11,5 @@ public interface AssistantService {
 
     QueryResponse getResponse(Provider provider, String query, UUID conversationId, UUID documentId, QueryRequest.Options options);
 
-    Flux<String> getStreamResponse(Provider provider, String query, UUID conversationId, UUID documentId, QueryRequest.Options options);
+    Flux<QueryResponse> getStreamResponse(Provider provider, String query, UUID conversationId, UUID documentId, QueryRequest.Options options);
 }
