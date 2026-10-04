@@ -20,7 +20,6 @@ public record QueryRequest(
         NORMAL_QA,
         DOCUMENT_SUMMARY,
         TECHNICAL_INSIGHTS
-
     }
 
     public record Options(

@@ -28,6 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -144,10 +145,22 @@ public class UserServiceImpl implements UserService {
         final String tenantId = TenantContext.getCurrentTenant();
         final User user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotExistsException("User not found"));
+        if (isPlatformAdmin()) {
+            return user;
+        }
         if (!tenantId.equals(user.getTenantId())) {
             throw new InvalidRequestException("User does not belong to the tenant");
         }
         return user;
+    }
+
+    private boolean isPlatformAdmin() {
+        return Objects.requireNonNull(SecurityContextHolder
+                        .getContext().getAuthentication())
+                .getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        Objects.equals(authority.getAuthority(), "ROLE_PLATFORM_ADMIN"));
     }
 
     private String extractFirstName(final String fullName) {
