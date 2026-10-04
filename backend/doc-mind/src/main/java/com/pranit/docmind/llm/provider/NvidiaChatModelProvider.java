@@ -41,7 +41,7 @@ public class NvidiaChatModelProvider implements ChatModelStrategy {
 
         return QueryResponse.builder()
                 .content(response)
-                .responseTime(duration + "ms")
+                .responseTime(formatDuration(duration))
                 .citations(context.citations())
                 .build();
     }
@@ -55,13 +55,12 @@ public class NvidiaChatModelProvider implements ChatModelStrategy {
         return executor.stream(context.context(), conversationId)
                 .map(chunk -> QueryResponse.builder()
                         .content(chunk)
-                        .citations(citations)
                         .build())
                 .concatWith(Flux.defer(() -> {
                     final long duration = System.currentTimeMillis() - startTime;
                     return Flux.just(QueryResponse.builder()
                             .content("")
-                            .responseTime(duration + "ms")
+                            .responseTime(formatDuration(duration))
                             .citations(citations)
                             .build());
                 }));
@@ -70,5 +69,13 @@ public class NvidiaChatModelProvider implements ChatModelStrategy {
     @Override
     public Provider getProviderName() {
         return Provider.NVIDIA;
+    }
+
+    private String formatDuration(final long durationMs) {
+        if (durationMs < 1_000) return durationMs + "ms";
+        if (durationMs < 60_000) return String.format("%.1fs", durationMs / 1_000.0);
+        final long minutes = durationMs / 60_000;
+        final double seconds = (durationMs % 60_000) / 1_000.0;
+        return String.format("%dm %.1fs", minutes, seconds);
     }
 }
