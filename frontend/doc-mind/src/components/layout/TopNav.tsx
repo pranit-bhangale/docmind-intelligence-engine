@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Sun,
   Moon,
@@ -35,6 +36,8 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { theme, toggleTheme } = useTheme();
   const { isAdmin } = useAuth();
+  const location = useLocation();
+  const isChatView = location.pathname === '/chat' || (!isAdmin && location.pathname === '/');
   const {
     startNewChat,
     generationMode,
@@ -80,7 +83,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           }`}>
             {isAdmin ? 'Admin Console' : 'RAG workflow'}
           </span>
-          {!isAdmin && primaryDoc && (
+          {primaryDoc && (
             <span className="text-[10px] text-muted-foreground truncate hidden lg:inline">
               Scoped to: <span className="font-medium text-foreground">{primaryDoc.name}</span>
             </span>
@@ -88,8 +91,8 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </div>
 
-      {/* Center Area: Chat & RAG controls (Only for Regular User Workspace) */}
-      {!isAdmin && (
+      {/* Center Area: Chat & RAG controls (Visible when viewing Chat workspace) */}
+      {isChatView && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2">
           <button
             onClick={() => startNewChat()}
@@ -274,7 +277,7 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right Controls: Export .md + Command Palette + Theme + Profile */}
       <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-        {!isAdmin && (
+        {isChatView && (
           <button
             onClick={exportChatAsMarkdown}
             disabled={messages.length === 0}

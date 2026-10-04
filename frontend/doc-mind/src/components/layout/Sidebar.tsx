@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {isAdmin ? (
-          /* Admin Operations Navigation */
+          /* Admin Operations Navigation (Only for Admins) */
           <div className="space-y-1">
             {!isCollapsed && (
               <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 mb-2">
@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
           </div>
         ) : (
-          /* User Knowledge Base Workspace Section */
+          /* User Knowledge Base Workspace Section (Only for Standard Users) */
           <KnowledgeSection isCollapsed={isCollapsed} />
         )}
       </div>

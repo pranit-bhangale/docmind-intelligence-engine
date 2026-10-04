@@ -18,7 +18,7 @@ import { ProfileSettingsModal } from '../modals/ProfileSettingsModal';
 import { LoginModal } from '../auth/LoginModal';
 
 export const AppShell: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, canAccessTenants, canAccessUsers } = useAuth();
   const navigate = useNavigate();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -77,7 +77,7 @@ export const AppShell: React.FC = () => {
               <Route
                 path="/tenants"
                 element={
-                  isAdmin ? (
+                  canAccessTenants ? (
                     <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                       <TenantManagementView
                         onOpenRegisterModal={() => setIsRegisterTenantOpen(true)}
@@ -91,7 +91,7 @@ export const AppShell: React.FC = () => {
               <Route
                 path="/users"
                 element={
-                  isAdmin ? (
+                  canAccessUsers ? (
                     <div className="overflow-y-auto h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                       <UserManagementView
                         onOpenAddUserModal={() => setIsAddUserOpen(true)}
