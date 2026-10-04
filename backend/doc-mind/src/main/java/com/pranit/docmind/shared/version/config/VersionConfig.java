@@ -11,7 +11,7 @@ public class VersionConfig implements WebMvcConfigurer {
     @Override
     public void configureApiVersioning(ApiVersionConfigurer configurer) {
         configurer
-                .useRequestHeader("X-Api-Version")
+                .useRequestHeader("X-API-Version")
                 .setVersionParser(new VersionParser())
                 .addSupportedVersions("v1")
                 .setDefaultVersion("v1")

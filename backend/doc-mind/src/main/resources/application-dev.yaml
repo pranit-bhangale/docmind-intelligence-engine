@@ -205,7 +205,7 @@ docmind:
       - HEAD
     allowed-headers:
       - Content-Type
-      - X-Api-Version
+      - X-API-Version
       - X-Conversation-ID
       - Accept
       - Origin
