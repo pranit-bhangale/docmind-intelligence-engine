@@ -29,7 +29,7 @@ public class AssistantServiceImpl implements AssistantService {
     }
 
     @Override
-    public Flux<String> getStreamResponse
+    public Flux<QueryResponse> getStreamResponse
             (final Provider provider, final String query, final UUID conversationId,
              final UUID documentId, final QueryRequest.Options options) {
         final Metadata metadata = documentValidationService.getDocumentMetadata(documentId);

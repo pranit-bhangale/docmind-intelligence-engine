@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -420,15 +421,19 @@ public class DocumentEnricher implements AutoCloseable {
         long timeout = Math.clamp(Math.min(s.callTimeoutNanos(), remaining(deadline)),
                 TimeUnit.MILLISECONDS.toNanos(1), Long.MAX_VALUE);
         Future<AiBatch> future = enrichExecutor.submit(() -> {
-            String llmResponse = enrichChatClient.prompt()
-                    .messages(new SystemMessage(SYSTEM_PROMPT), new UserMessage(userText))
-                    .call()
-                    .content();
-            log.info("LLM response: {}", llmResponse);
+            String llmResponse = Objects.requireNonNull(enrichChatClient
+                            .prompt()
+                            .messages(new SystemMessage(SYSTEM_PROMPT), new UserMessage(userText))
+                            .call()
+                            .content()
+                    , "LLM returned a null response");
+            if (llmResponse.isBlank())
+                throw new IllegalStateException("LLM returned an empty response");
             int start = llmResponse.indexOf('{');
             int end = llmResponse.lastIndexOf('}');
-            if (start < 0 || end < start)
-                throw new IllegalStateException("LLM did not return valid JSON: " + llmResponse);
+            if (start == -1 || end == -1 || start >= end) {
+                throw new IllegalStateException("LLM response does not contain valid JSON");
+            }
             AiBatch batch = objectMapper.readValue
                     (llmResponse.substring(start, end + 1), AiBatch.class);
             validateBatch(batch, missing);

@@ -70,6 +70,7 @@ public class DocumentRetriever {
         return Context.Citation.builder()
                 .documentId(UUID.fromString((String) metadata.get(DocMetadata.DOCUMENT_ID)))
                 .fileName((String) metadata.get(DocMetadata.FILE_NAME))
+                .content(document.getText())
                 .pageNumber((Long) metadata.get(DocMetadata.PAGE_NUMBER))
                 .chunkIndex((Long) metadata.get(DocMetadata.CHUNK_INDEX))
                 .previousChunkIndex((Long) metadata.get(DocMetadata.PREVIOUS_CHUNK_INDEX))

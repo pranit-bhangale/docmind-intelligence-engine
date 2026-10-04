@@ -1,4 +1,4 @@
-CREATE TABLE document_metadata
+CREATE TABLE IF NOT EXISTS document_metadata
 (
     document_id    UUID         NOT NULL,
     user_id        UUID         NOT NULL,

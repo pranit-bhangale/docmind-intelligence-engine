@@ -12,7 +12,7 @@ public interface ChatModelStrategy {
 
     QueryResponse getResponse(String query, UUID conversationId, Metadata metadata, QueryRequest.Options options);
 
-    Flux<String> getStreamResponse(String query, UUID conversationId, Metadata metadata, QueryRequest.Options options);
+    Flux<QueryResponse> getStreamResponse(String query, UUID conversationId, Metadata metadata, QueryRequest.Options options);
 
     Provider getProviderName();
 }

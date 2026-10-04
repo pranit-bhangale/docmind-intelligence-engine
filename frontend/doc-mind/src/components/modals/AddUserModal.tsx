@@ -17,7 +17,7 @@ interface AddUserModalProps {
 
 const isPlatformAdminRole = (roleName: string): boolean => {
   const norm = roleName.toUpperCase().replace('ROLE_', '');
-  return norm === 'PLATFORM_ADMIN' || norm === 'SUPER_ADMIN';
+  return norm === 'PLATFORM_ADMIN';
 };
 
 export const AddUserModal: React.FC<AddUserModalProps> = ({

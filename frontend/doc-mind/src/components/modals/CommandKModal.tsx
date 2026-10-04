@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Building2, Users, LayoutDashboard, ArrowRight, Settings } from 'lucide-react';
 import { Modal } from '../ui/Modal';
+import { useAuth } from '../../context/AuthContext';
 
 interface CommandKModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
   onOpenAddUser,
 }) => {
   const navigate = useNavigate();
+  const { canAccessTenants, canAccessUsers } = useAuth();
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'Go to Dashboard',
       category: 'Navigation',
       icon: <LayoutDashboard className="size-4" />,
+      visible: true,
       action: () => {
         navigate('/dashboard');
         onClose();
@@ -48,6 +51,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'View All Tenants',
       category: 'Navigation',
       icon: <Building2 className="size-4" />,
+      visible: canAccessTenants,
       action: () => {
         navigate('/tenants');
         onClose();
@@ -58,6 +62,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'View User Directory',
       category: 'Navigation',
       icon: <Users className="size-4" />,
+      visible: canAccessUsers,
       action: () => {
         navigate('/users');
         onClose();
@@ -68,6 +73,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'System Settings',
       category: 'Navigation',
       icon: <Settings className="size-4" />,
+      visible: canAccessUsers || canAccessTenants,
       action: () => {
         navigate('/settings');
         onClose();
@@ -78,6 +84,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'Register New Tenant',
       category: 'Quick Action',
       icon: <Building2 className="size-4 text-primary" />,
+      visible: canAccessTenants,
       action: () => {
         onClose();
         onOpenRegisterTenant();
@@ -88,6 +95,7 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
       title: 'Add New User Account',
       category: 'Quick Action',
       icon: <Users className="size-4 text-primary" />,
+      visible: canAccessUsers,
       action: () => {
         onClose();
         onOpenAddUser();
@@ -95,11 +103,13 @@ export const CommandKModal: React.FC<CommandKModalProps> = ({
     },
   ];
 
-  const filtered = actions.filter(
-    (a) =>
-      a.title.toLowerCase().includes(query.toLowerCase()) ||
-      a.category.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = actions
+    .filter((a) => a.visible)
+    .filter(
+      (a) =>
+        a.title.toLowerCase().includes(query.toLowerCase()) ||
+        a.category.toLowerCase().includes(query.toLowerCase())
+    );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="lg" className="p-0 overflow-hidden">

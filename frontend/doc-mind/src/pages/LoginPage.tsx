@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, ArrowRight, Building2, Sun, Moon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, User, ArrowRight, Sun, Moon } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Logo } from '../components/common/Logo';
 
 export const LoginPage: React.FC = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -20,9 +20,9 @@ export const LoginPage: React.FC = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      navigate(isAdmin ? '/dashboard' : '/chat', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +30,6 @@ export const LoginPage: React.FC = () => {
     setError(null);
     try {
       await login({ username, password });
-      navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid username or password');
     } finally {
@@ -98,15 +97,6 @@ export const LoginPage: React.FC = () => {
               <ArrowRight className="size-3.5" />
             </Button>
           </form>
-
-          <div className="border-t border-border pt-4 mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              Need a new tenant workspace?{' '}
-              <Link to="/register-tenant" className="font-semibold text-primary hover:underline inline-flex items-center gap-1">
-                <Building2 className="size-3 inline" /> Register Tenant
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

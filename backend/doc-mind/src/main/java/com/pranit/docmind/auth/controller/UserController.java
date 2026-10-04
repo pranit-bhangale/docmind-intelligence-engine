@@ -93,7 +93,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - requires administrator privileges")
     })
     @GetMapping(value = "/all", version = "v1")
-    @PreAuthorize("hasAnyRole('COMPANY_ADMIN','ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<PageResponse<UserResponse>> findAllUsers(
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
             @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(10) int size,

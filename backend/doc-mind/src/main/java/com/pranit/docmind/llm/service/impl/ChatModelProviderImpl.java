@@ -34,7 +34,7 @@ public class ChatModelProviderImpl implements ChatModelProvider {
     }
 
     @Override
-    public Flux<String> getStreamResponse
+    public Flux<QueryResponse> getStreamResponse
             (final Provider provider, final String query,
              final UUID conversationId, final Metadata metadata, final QueryRequest.Options options) {
         return Flux.defer(() -> factory
