@@ -20,7 +20,9 @@ export interface GetDocumentsParams {
   sortDirection?: 'ASC' | 'DESC';
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+import { API_BASE_URL } from '../config/apiConfig';
+
+const BASE_URL = API_BASE_URL;
 
 export const documentService = {
   async uploadDocument(file: File): Promise<DocumentResponse> {

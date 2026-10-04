@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui
 import { useAuth } from '../../context/AuthContext';
 import { useTenant } from '../../context/TenantContext';
 import { Badge } from '../ui/Badge';
+import { API_BASE_URL } from '../../config/apiConfig';
 
 export const SettingsView: React.FC = () => {
   const { user } = useAuth();
@@ -15,7 +16,7 @@ export const SettingsView: React.FC = () => {
     let isMounted = true;
     const checkHealth = async () => {
       try {
-        const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+        const BASE_URL = API_BASE_URL;
         const res = await fetch(`${BASE_URL}/actuator/health`);
         if (res.ok) {
           const data = await res.json();
