@@ -64,10 +64,6 @@ export const DocumentUpload: React.FC = () => {
           <div className="text-xs font-bold text-foreground">Upload Knowledge Source</div>
           <div className="text-[11px] text-muted-foreground">Drag & drop or click to browse files</div>
         </div>
-
-        <div className="text-[9.5px] text-muted-foreground/70 max-w-[210px] leading-tight">
-          PDF, DOCX, XLSX, PPTX, HTML, XML, TXT, MD, CSV, JSON (Max 25MB)
-        </div>
       </div>
 
       {/* Upload Progress & Indexing Status Banner */}

@@ -53,11 +53,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   {message.queryType === 'NORMAL_QA' ? 'Q&A' : message.queryType === 'DOCUMENT_SUMMARY' ? 'Summary' : 'Insights'}
                 </span>
               )}
-              {message.ragConfig && (
-                <span className="rounded-full border border-border/80 bg-muted/30 px-2 py-0.5 text-[9.5px] font-semibold text-muted-foreground uppercase">
-                  ⚡ {message.ragConfig.provider} · Top-{message.ragConfig.topK}
-                </span>
-              )}
             </div>
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <span className="text-[10px] text-muted-foreground">{message.timestamp}</span>

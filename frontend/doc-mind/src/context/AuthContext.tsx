@@ -109,11 +109,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const canAccessTenants = Boolean(hasRole('PLATFORM_ADMIN'));
 
   const canAccessUsers = Boolean(
-    hasRole('PLATFORM_ADMIN') || hasRole('COMPANY_ADMIN') || hasRole('ADMIN')
+    !hasRole('PLATFORM_ADMIN') && (hasRole('COMPANY_ADMIN') || hasRole('ADMIN'))
   );
 
   const canAccessRoles = Boolean(
-    hasRole('PLATFORM_ADMIN') || hasRole('COMPANY_ADMIN') || hasRole('ADMIN')
+    !hasRole('PLATFORM_ADMIN') && (hasRole('COMPANY_ADMIN') || hasRole('ADMIN'))
   );
 
   const isAdmin = Boolean(

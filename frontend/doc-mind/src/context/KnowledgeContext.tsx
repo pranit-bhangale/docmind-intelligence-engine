@@ -9,6 +9,7 @@ import type {
 } from '../types/knowledge';
 import { documentService } from '../services/documentService';
 import { assistantService } from '../services/assistantService';
+import { useAuth } from './AuthContext';
 
 export const generateUUID = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -125,6 +126,7 @@ function generateSmartDocumentResponse(
 const KnowledgeContext = createContext<KnowledgeContextType | undefined>(undefined);
 
 export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
   const [activeDocument, setActiveDocument] = useState<KnowledgeDocument | null>(null);
   const [contextDocIds, setContextDocIds] = useState<string[]>([]);
@@ -174,6 +176,12 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // On Mount / Page Refresh: Fetch user's documents from backend GET /api/documents & sync with localStorage
   useEffect(() => {
     let isMounted = true;
+
+    // Only fetch RAG knowledge documents for authenticated standard users (ROLE_USER).
+    // Platform Admins and Admins operate in Ops Management and do not hit /api/documents.
+    if (!isAuthenticated || isAdmin) {
+      return;
+    }
 
     const loadDocuments = async () => {
       // 1. Instant load from localStorage cache for immediate render
@@ -225,7 +233,7 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAuthenticated, isAdmin]);
 
   // Sync documents state to localStorage whenever documents state changes
   useEffect(() => {
@@ -641,14 +649,12 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       );
 
       let streamedText = '';
-      let receivedStream = false;
 
       await assistantService.streamQueryDocument(
         targetDocId,
         activeConversationId,
         userText,
         (chunk, meta) => {
-          receivedStream = true;
           streamedText += chunk;
           setConversations((prev) =>
             prev.map((c) => {
@@ -703,62 +709,35 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             })
           );
         },
-        async (err) => {
+        (err) => {
           const endTime = performance.now();
           const calcTime = `${((endTime - startTime) / 1000).toFixed(2)}s`;
-          if (!receivedStream) {
-            const fallbackText = generateSmartDocumentResponse(userText, attachedDocs, ragSettings);
+          setIsStreaming(false);
 
-            const chunkSize = 4;
-            for (let i = 0; i <= fallbackText.length; i += chunkSize) {
-              await new Promise((r) => setTimeout(r, 20));
-              const partialText = fallbackText.slice(0, i + chunkSize);
-              setConversations((prev) =>
-                prev.map((c) => {
-                  if (c.id === activeConversationId) {
-                    return {
-                      ...c,
-                      messages: c.messages.map((m) =>
-                        m.id === assistantMsgId ? { ...m, text: partialText, status: 'streaming' } : m
-                      ),
-                    };
-                  }
-                  return c;
-                })
-              );
-            }
-            setConversations((prev) =>
-              prev.map((c) => {
-                if (c.id === activeConversationId) {
-                  return {
-                    ...c,
-                    messages: c.messages.map((m) =>
-                      m.id === assistantMsgId ? { ...m, status: 'complete', executionTime: calcTime } : m
-                    ),
-                  };
-                }
-                return c;
-              })
-            );
-            setIsStreaming(false);
-          } else {
-            setIsStreaming(false);
-            setConversations((prev) =>
-              prev.map((c) => {
-                if (c.id === activeConversationId) {
-                  return {
-                    ...c,
-                    messages: c.messages.map((m) =>
-                      m.id === assistantMsgId
-                        ? { ...m, status: 'error', error: err.message, executionTime: calcTime }
-                        : m
-                    ),
-                  };
-                }
-                return c;
-              })
-            );
-          }
+          const errorMessage = err?.message || 'Assistant service unavailable';
+
+          setConversations((prev) =>
+            prev.map((c) => {
+              if (c.id === activeConversationId) {
+                return {
+                  ...c,
+                  messages: c.messages.map((m) => {
+                    if (m.id === assistantMsgId) {
+                      return {
+                        ...m,
+                        text: streamedText || `⚠️ **AI Assistant Service Error**: ${errorMessage}`,
+                        status: streamedText ? 'complete' : 'error',
+                        error: streamedText ? undefined : errorMessage,
+                        executionTime: calcTime,
+                      };
+                    }
+                    return m;
+                  }),
+                };
+              }
+              return c;
+            })
+          );
         },
         selectedProvider,
         queryOptions

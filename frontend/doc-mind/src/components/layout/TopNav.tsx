@@ -44,8 +44,6 @@ export const TopNav: React.FC<TopNavProps> = ({
     toggleGenerationMode,
     exportChatAsMarkdown,
     activeConversation,
-    documents,
-    contextDocIds,
     ragSettings,
     updateRagSettings,
   } = useKnowledge();
@@ -53,13 +51,11 @@ export const TopNav: React.FC<TopNavProps> = ({
   const [isRagSettingsOpen, setIsRagSettingsOpen] = useState(false);
 
   const messages = activeConversation?.messages || [];
-  const activeDocs = documents.filter((d) => contextDocIds.includes(d.id));
-  const primaryDoc = activeDocs[0];
 
   return (
-    <header className="relative flex h-14 w-full items-center justify-between border-b border-border/70 bg-card/80 px-4 backdrop-blur-md transition-colors select-none shrink-0 z-40">
+    <header className="relative flex h-14 w-full items-center justify-between border-b border-border/70 bg-card/80 px-3 sm:px-4 backdrop-blur-md transition-colors select-none shrink-0 z-40 gap-2">
       {/* Left Area: Mobile Menu & DocMind Assistant Branding */}
-      <div className="flex items-center gap-2.5 truncate">
+      <div className="flex items-center gap-2 shrink-0 min-w-0">
         <Button
           variant="ghost"
           size="icon-sm"
@@ -69,35 +65,30 @@ export const TopNav: React.FC<TopNavProps> = ({
           <Menu className="size-4" />
         </Button>
 
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="flex size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shrink-0">
             <Sparkles className="size-3.5" />
           </div>
           <span className="font-bold text-foreground text-xs truncate">
             {isAdmin ? 'DocMind Operations' : 'DocMind Assistant'}
           </span>
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold hidden sm:inline ${
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold hidden xl:inline shrink-0 ${
             isAdmin
               ? 'border-primary/30 bg-primary/10 text-primary'
               : 'border-border bg-muted/40 text-muted-foreground'
           }`}>
             {isAdmin ? 'Admin Console' : 'RAG workflow'}
           </span>
-          {primaryDoc && (
-            <span className="text-[10px] text-muted-foreground truncate hidden lg:inline">
-              Scoped to: <span className="font-medium text-foreground">{primaryDoc.name}</span>
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Center Area: Chat & RAG controls (Visible when viewing Chat workspace) */}
+      {/* Center Area: Chat & RAG controls (Clean flex layout centered without absolute overlap) */}
       {isChatView && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2">
+        <div className="hidden lg:flex items-center justify-center gap-1.5 xl:gap-2 text-xs select-none mx-auto shrink-0">
           <button
             onClick={() => startNewChat()}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-background hover:bg-accent text-foreground text-[11px] font-medium transition-all shadow-2xs"
-            title="Start new chat session (X-Conversation-Id UUID)"
+            title="Start new chat session"
           >
             <MessageSquare className="size-3 text-primary" />
             <span>New Chat</span>
@@ -278,15 +269,25 @@ export const TopNav: React.FC<TopNavProps> = ({
       {/* Right Controls: Export .md + Command Palette + Theme + Profile */}
       <div className="flex items-center gap-1.5 shrink-0 ml-auto">
         {isChatView && (
-          <button
-            onClick={exportChatAsMarkdown}
-            disabled={messages.length === 0}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors text-xs font-medium mr-1"
-            title="Export chat as Markdown (.md)"
-          >
-            <Download className="size-3.5 text-primary" />
-            <span className="hidden sm:inline">Download</span>
-          </button>
+          <>
+            <button
+              onClick={() => startNewChat()}
+              className="lg:hidden flex size-7 items-center justify-center rounded-full border border-border bg-background hover:bg-accent text-foreground transition-colors shrink-0"
+              title="Start new chat session"
+            >
+              <MessageSquare className="size-3.5 text-primary" />
+            </button>
+
+            <button
+              onClick={exportChatAsMarkdown}
+              disabled={messages.length === 0}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors text-xs font-medium"
+              title="Export chat as Markdown (.md)"
+            >
+              <Download className="size-3.5 text-primary shrink-0" />
+              <span className="hidden sm:inline">Download</span>
+            </button>
+          </>
         )}
 
         <Tooltip content="Quick Command Palette (Ctrl+K)">

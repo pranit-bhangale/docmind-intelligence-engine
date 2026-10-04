@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, ArrowRight, Building2, Sun, Moon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, User, ArrowRight, Sun, Moon } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
@@ -97,15 +97,6 @@ export const LoginPage: React.FC = () => {
               <ArrowRight className="size-3.5" />
             </Button>
           </form>
-
-          <div className="border-t border-border pt-4 mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              Need a new tenant workspace?{' '}
-              <Link to="/register-tenant" className="font-semibold text-primary hover:underline inline-flex items-center gap-1">
-                <Building2 className="size-3 inline" /> Register Tenant
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

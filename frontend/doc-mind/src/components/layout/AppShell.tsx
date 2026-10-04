@@ -98,7 +98,7 @@ export const AppShell: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <Navigate to="/chat" replace />
+                    <Navigate to={isAdmin ? "/dashboard" : "/chat"} replace />
                   )
                 }
               />

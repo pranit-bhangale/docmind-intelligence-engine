@@ -20,6 +20,7 @@ function App() {
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register-tenant" element={<RegisterTenantPage />} />
+              <Route path="/register" element={<RegisterTenantPage />} />
 
               {/* Protected App Shell Routes */}
               <Route element={<ProtectedRoute />}>

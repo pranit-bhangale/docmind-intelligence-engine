@@ -21,17 +21,36 @@ function formatAiContent(text: string): string {
     try {
       const parsed = JSON.parse(trimmed);
 
-      // Single-key wrapper like { content: "..." } or { answer: "..." }
       if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        // Direct text property extraction (e.g. { type: "text", text: "..." } or { content: "..." })
+        const directText =
+          parsed.text ?? parsed.content ?? parsed.answer ?? parsed.message ?? parsed.delta;
+        if (typeof directText === 'string') {
+          return directText.trim();
+        }
+
+        // Single-key wrapper
         const keys = Object.keys(parsed);
         if (keys.length === 1 && typeof parsed[keys[0]] === 'string') {
           return parsed[keys[0]];
         }
 
-        // Multi-key dictionary of topics -> descriptions
+        // Multi-key dictionary: filter out metadata keys ('type', 'status', 'event', 'provider', etc.)
+        const metadataKeys = new Set([
+          'type',
+          'status',
+          'event',
+          'provider',
+          'responsetime',
+          'citations',
+          'sources',
+          'grounded',
+          'options',
+        ]);
         let markdownOutput = '';
+
         for (const [key, value] of Object.entries(parsed)) {
-          if (value === null || value === undefined) continue;
+          if (value === null || value === undefined || metadataKeys.has(key.toLowerCase())) continue;
 
           markdownOutput += `### ${key}\n\n`;
 
@@ -51,7 +70,7 @@ function formatAiContent(text: string): string {
             markdownOutput += `${value}\n\n`;
           }
         }
-        return markdownOutput.trim();
+        return markdownOutput.trim() || trimmed;
       } else if (Array.isArray(parsed)) {
         let markdownOutput = '';
         parsed.forEach((item, idx) => {

@@ -64,7 +64,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl border border-border bg-card p-1.5 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl border border-border bg-card/95 p-1.5 shadow-2xl z-50 backdrop-blur-md animate-in fade-in zoom-in-95 duration-150">
           <div className="px-3 py-2 border-b border-border mb-1">
             <div className="font-medium text-xs text-foreground truncate">
               {user.firstName ? `${user.firstName} ${user.lastName}` : user.username}

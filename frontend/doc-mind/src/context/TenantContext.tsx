@@ -15,14 +15,15 @@ interface TenantContextType {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, canAccessTenants } = useAuth();
+  const { isAuthenticated, canAccessTenants, isAdmin } = useAuth();
   const [tenants, setTenants] = useState<TenantResponse[]>([]);
   const [activeTenant, setActiveTenantState] = useState<TenantResponse | null>(null);
   const [isLoadingTenants, setIsLoadingTenants] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshTenants = useCallback(async () => {
-    if (!isAuthenticated) {
+    // Standard users (ROLE_USER, i.e., !isAdmin) do not access tenant administration endpoints.
+    if (!isAuthenticated || !isAdmin) {
       setTenants([]);
       setActiveTenantState(null);
       return;
@@ -58,7 +59,7 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } finally {
       setIsLoadingTenants(false);
     }
-  }, [isAuthenticated, canAccessTenants]);
+  }, [isAuthenticated, canAccessTenants, isAdmin]);
 
   useEffect(() => {
     if (isAuthenticated) {
