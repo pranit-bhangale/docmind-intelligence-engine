@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS document_metadata
     CONSTRAINT pk_document_metadata
         PRIMARY KEY (document_id),
 
-    CONSTRAINT uk_file_name
-        UNIQUE (file_name),
+    CONSTRAINT uk_user_file_name
+    UNIQUE (user_id, file_name),
 
     CONSTRAINT chk_document_file_status
         CHECK ( file_status IN
