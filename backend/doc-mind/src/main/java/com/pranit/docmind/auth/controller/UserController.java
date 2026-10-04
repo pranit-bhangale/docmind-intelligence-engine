@@ -6,6 +6,7 @@ import com.pranit.docmind.auth.domain.dto.UpdateUserRequest;
 import com.pranit.docmind.auth.domain.dto.UserResponse;
 import com.pranit.docmind.shared.wrapper.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -95,11 +96,11 @@ public class UserController {
     @GetMapping(value = "/all", version = "v1")
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN')")
     public ResponseEntity<PageResponse<UserResponse>> findAllUsers(
-            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
-            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(10) int size,
-            @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "sortBy", defaultValue = "username") String sortBy,
-            @RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection
+            @Parameter(description = "Zero-based page index") @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Number of user records per page") @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(10) int size,
+            @Parameter(description = "Optional keyword to filter users by username or email") @RequestParam(name = "keyword", required = false) String keyword,
+            @Parameter(description = "Property field to sort users by") @RequestParam(name = "sortBy", defaultValue = "username") String sortBy,
+            @Parameter(description = "Sort direction: ASC or DESC") @RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection
     ) {
         return ResponseEntity.ok().body(this.userService.findAllUsers(page, size, keyword, sortBy, sortDirection));
     }

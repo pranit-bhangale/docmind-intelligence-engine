@@ -5,6 +5,7 @@ import com.pranit.docmind.tenant.application.service.TenantService;
 import com.pranit.docmind.tenant.domain.dto.TenantRegisterRequest;
 import com.pranit.docmind.tenant.domain.dto.TenantResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,7 +64,9 @@ public class TenantController {
     })
     @PostMapping(value = "/approve/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public ResponseEntity<Void> approveTenant(@PathVariable("tenant-id") final String tenantId) {
+    public ResponseEntity<Void> approveTenant(
+            @Parameter(name = "tenant-id", description = "Unique identifier of the pending tenant organization", required = true)
+            @PathVariable("tenant-id") final String tenantId) {
         this.tenantService.approveTenant(tenantId);
         return ResponseEntity.ok().build();
     }
@@ -79,7 +82,9 @@ public class TenantController {
     })
     @PatchMapping(value = "/activate/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public ResponseEntity<Void> activateTenant(@PathVariable("tenant-id") final String tenantId) {
+    public ResponseEntity<Void> activateTenant(
+            @Parameter(name = "tenant-id", description = "Unique identifier of the tenant organization", required = true)
+            @PathVariable("tenant-id") final String tenantId) {
         this.tenantService.activateTenant(tenantId);
         return ResponseEntity.ok().build();
     }
@@ -95,7 +100,9 @@ public class TenantController {
     })
     @PatchMapping(value = "/deactivate/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public ResponseEntity<Void> deactivateTenant(@PathVariable("tenant-id") final String tenantId) {
+    public ResponseEntity<Void> deactivateTenant(
+            @Parameter(name = "tenant-id", description = "Unique identifier of the tenant organization", required = true)
+            @PathVariable("tenant-id") final String tenantId) {
         this.tenantService.deactivateTenant(tenantId);
         return ResponseEntity.ok().build();
     }
@@ -111,7 +118,9 @@ public class TenantController {
     })
     @PatchMapping(value = "/suspend/{tenant-id}", version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public ResponseEntity<Void> suspendTenant(@PathVariable("tenant-id") final String tenantId) {
+    public ResponseEntity<Void> suspendTenant(
+            @Parameter(name = "tenant-id", description = "Unique identifier of the tenant organization", required = true)
+            @PathVariable("tenant-id") final String tenantId) {
         this.tenantService.suspendTenant(tenantId);
         return ResponseEntity.ok().build();
     }
@@ -128,11 +137,11 @@ public class TenantController {
     @GetMapping(version = "v1")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<PageResponse<TenantResponse>> findAllTenants(
-            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
-            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(10) int size,
-            @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "sortBy", defaultValue = "username") String sortBy,
-            @RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection
+            @Parameter(description = "Zero-based page index") @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Number of tenant records per page") @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(10) int size,
+            @Parameter(description = "Optional keyword to filter tenants by company name or code") @RequestParam(name = "keyword", required = false) String keyword,
+            @Parameter(description = "Property field to sort tenants by") @RequestParam(name = "sortBy", defaultValue = "username") String sortBy,
+            @Parameter(description = "Sort direction: ASC or DESC") @RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection
     ) {
         return ResponseEntity.ok(this.tenantService.findAllTenants(page, size, keyword, sortBy, sortDirection));
     }
