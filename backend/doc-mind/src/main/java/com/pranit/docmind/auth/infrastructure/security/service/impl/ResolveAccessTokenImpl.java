@@ -19,7 +19,7 @@ public final class ResolveAccessTokenImpl implements ResolveAccessToken {
 
     @Override
     public String getAccessTokenFromRequest(final HttpServletRequest request) {
-        log.info("Fetching access token from request");
+        log.info("Fetching access token from request {}", request.getRequestURI());
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return null;
         return Arrays.stream(cookies)

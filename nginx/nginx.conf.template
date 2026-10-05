@@ -2,19 +2,20 @@ map $http_upgrade $connection_upgrade {
     default upgrade;
     ''      close;
 }
-# HTTP → HTTPS
+
+# HTTP → HTTPS Redirect
 server {
     listen 80;
     server_name localhost;
     return 301 https://$host$request_uri;
 }
 
-# HTTPS
+# HTTPS Server
 server {
     listen 443 ssl;
     server_name localhost;
 
-    # SSL
+    # SSL Certificates
     ssl_certificate /etc/nginx/ssl/docmind.crt;
     ssl_certificate_key /etc/nginx/ssl/docmind.key;
 
@@ -22,12 +23,12 @@ server {
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
 
-    # Security headers
+    # Security Headers
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-    # Frontend - React
+    # Frontend - React Application
     location / {
         proxy_pass http://frontend:5173;
 
@@ -38,7 +39,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Vite HMR / WebSocket
+        # WebSocket support (for HMR / real-time updates)
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
 
@@ -47,8 +48,8 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # Backend - Spring Boot
-    location /api/ {
+    # Backend API - Spring Boot Application
+    location /api {
         proxy_pass http://backend:8080;
 
         proxy_http_version 1.1;
@@ -61,5 +62,34 @@ server {
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
+    }
+
+    # Swagger UI & OpenAPI Docs
+    location /swagger-ui {
+        proxy_pass http://backend:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /v3/api-docs {
+        proxy_pass http://backend:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Spring Boot Actuator Monitoring
+    location /actuator {
+        proxy_pass http://backend:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }

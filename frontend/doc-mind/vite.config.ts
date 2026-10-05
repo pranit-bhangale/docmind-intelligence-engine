@@ -9,7 +9,7 @@ export default defineConfig(({mode}) => {
     // Load environment variables from workspace root .env
     const envDir = path.resolve(import.meta.dirname, '../../')
     const env = loadEnv(mode, envDir, '')
-    const backendTarget = env.API_BASE_URL || env.BACKEND_URL
+    const backendTarget = process.env.BACKEND_URL || env.BACKEND_URL || env.API_BASE_URL;
     const frontendPort = Number(env.FRONTEND_PORT);
 
     const proxyConfig: Record<string, ProxyOptions> = backendTarget

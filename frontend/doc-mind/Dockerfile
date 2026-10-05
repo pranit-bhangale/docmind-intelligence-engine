@@ -7,7 +7,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Stage 2: Run frontend
+# Stage 2: Run frontend Node container
 FROM node:22-alpine
 LABEL author="Pranit Bhangale"
 WORKDIR /app
