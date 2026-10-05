@@ -1,0 +1,197 @@
+services:
+  # Nginx
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: docmind-nginx:latest
+    container_name: docmind-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "nginx", "-t" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - docmind
+
+  # DocMind Frontend UI Application
+  frontend:
+    build:
+      context: ./frontend/doc-mind
+      dockerfile: Dockerfile
+    image: docmind-frontend:latest
+    container_name: docmind-frontend
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: ${API_BASE_URL}
+      FRONTEND_PORT: ${FRONTEND_PORT}
+      BACKEND_URL: ${BACKEND_URL}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:5173"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:5173/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - docmind
+
+  # DocMind Spring Boot Application
+  backend:
+    build:
+      context: ./backend/doc-mind
+      dockerfile: Dockerfile
+    image: docmind-backend:latest
+    container_name: docmind-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      # PostgreSQL
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: docmind
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Qdrant
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6334
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
+      QDRANT_COLLECTION_NAME: docmind
+      QDRANT_CONTENT_FIELD_NAME: doc_content
+      QDRANT_USE_TLS: ${QDRANT_USE_TLS}
+      # AI - Enrichment
+      ENRICH_KEY: ${ENRICH_KEY}
+      ENRICH_BASE_URL: ${ENRICH_BASE_URL}
+      ENRICH_MODEL: ${ENRICH_MODEL}
+      # AI - Chat
+      CHAT_KEY: ${CHAT_KEY}
+      CHAT_BASE_URL: ${CHAT_BASE_URL}
+      CHAT_MODEL: ${CHAT_MODEL}
+      # OLLAMA - Chat
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL}
+      # AI - Embedding
+      EMBEDDING_KEY: ${EMBEDDING_KEY}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
+      # AI - Rewrite
+      REWRITE_KEY: ${REWRITE_KEY}
+      REWRITE_BASE_URL: ${REWRITE_BASE_URL}
+      REWRITE_MODEL: ${REWRITE_MODEL}
+      # Security & Cookies
+      COOKIE_HTTP_ONLY: ${COOKIE_HTTP_ONLY}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      # Bootstrap Admin
+      DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD}
+      # RSA Keys
+      PRIVATE_KEY_PATH: /app/key/private_key.pem
+      PUBLIC_KEY_PATH: /app/key/public_key.pem
+      # Logs
+      LOG_PATH: /app/logs/backend.log
+      LOG_LEVEL_ROOT: INFO
+      DOCMIND_LOG_LEVEL: DEBUG
+      # CORS
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f ${BACKEND_URL}/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+    volumes:
+      - "./docker/key:/app/key:ro"
+      - backend_logs:/app/logs
+    networks:
+      - docmind
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:18-alpine
+    container_name: docmind-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: docmind
+    ports:
+      - "5434:5432"
+    networks:
+      - docmind
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d docmind"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: docmind-vector
+    restart: unless-stopped
+    environment:
+      VECTORSTORE_QDRANT_HOST: qdrant
+      VECTORSTORE_QDRANT_PORT: 6334
+      VECTORSTORE_QDRANT_API_KEY: ${QDRANT_API_KEY}
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    networks:
+      - docmind
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "bash -c '</dev/tcp/127.0.0.1/6333'"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+networks:
+  docmind:
+    name: docmind
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: docmind_postgres_data
+  qdrant_data:
+    name: docmind_qdrant_data
+  redis_data:
+    name: docmind_redis_data
+  backend_logs:
+    name: docmind_backend_logs
