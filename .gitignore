@@ -27,6 +27,7 @@ pnpm-debug.log*
 # Private key / secret directories
 key/
 keys/
+ssl/
 
 # IntelliJ IDEA
 .idea/
