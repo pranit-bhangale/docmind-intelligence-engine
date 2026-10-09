@@ -7,7 +7,7 @@ import { Badge } from '../ui/Badge';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 export const SettingsView: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const { activeTenant } = useTenant();
 
   const [healthStatus, setHealthStatus] = useState<'UP' | 'DOWN' | 'CHECKING'>('CHECKING');
@@ -124,31 +124,33 @@ export const SettingsView: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Card 3: Tenant Context Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Layers className="size-4 text-purple-500" /> Tenant Context Settings
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Selected tenant partition properties
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground">Tenant Name</span>
-              <span className="font-semibold truncate max-w-[140px]">{activeTenant?.companyName || 'None Selected'}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground">Company Code</span>
-              <span className="font-semibold">{activeTenant?.companyCode || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground">Tenant Status</span>
-              <span className="font-semibold">{activeTenant?.status || 'N/A'}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Card 3: Tenant Context Settings (Tenant-bound roles only) */}
+        {!isSuperAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Layers className="size-4 text-purple-500" /> Tenant Context Settings
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Selected tenant partition properties
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs">
+              <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                <span className="text-muted-foreground">Tenant Name</span>
+                <span className="font-semibold truncate max-w-[140px]">{activeTenant?.companyName || 'None Selected'}</span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                <span className="text-muted-foreground">Company Code</span>
+                <span className="font-semibold">{activeTenant?.companyCode || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                <span className="text-muted-foreground">Tenant Status</span>
+                <span className="font-semibold">{activeTenant?.status || 'N/A'}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

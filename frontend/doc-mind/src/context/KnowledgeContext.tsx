@@ -133,7 +133,17 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [uploadState, setUploadState] = useState<UploadProgressState | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [generationMode, setGenerationMode] = useState<'streaming' | 'blocking'>('streaming');
+  const [generationMode, setGenerationModeState] = useState<'streaming' | 'blocking'>(() => {
+    try {
+      const saved = localStorage.getItem('docmind_generation_mode');
+      if (saved === 'streaming' || saved === 'blocking') {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return 'blocking';
+  });
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [ragSettings, setRagSettings] = useState<RagSettings>(() => {
     try {
@@ -451,8 +461,25 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setActiveDocument(null);
   }, []);
 
+  const setGenerationMode = useCallback((mode: 'streaming' | 'blocking') => {
+    setGenerationModeState(mode);
+    try {
+      localStorage.setItem('docmind_generation_mode', mode);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const toggleGenerationMode = useCallback(() => {
-    setGenerationMode((prev) => (prev === 'streaming' ? 'blocking' : 'streaming'));
+    setGenerationModeState((prev) => {
+      const next = prev === 'streaming' ? 'blocking' : 'streaming';
+      try {
+        localStorage.setItem('docmind_generation_mode', next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
   }, []);
 
   const clearCurrentChat = useCallback(() => {
@@ -555,49 +582,17 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     if (generationMode === 'blocking') {
-      let fullAnswerText = '';
-      let resSources: any[] = [];
-      try {
-        const res = await assistantService.queryDocument(
-          targetDocId,
-          activeConversationId,
-          userText,
-          selectedProvider,
-          queryOptions
-        ).catch(() => null);
-        if (res) {
-          if (res.answer || res.content) {
-            fullAnswerText = res.answer || res.content || '';
-          }
-          if (res.sources && res.sources.length > 0) {
-            resSources = res.sources;
-          } else if (res.citations && res.citations.length > 0) {
-            resSources = res.citations;
-          }
-        }
-      } catch {
-        // fallback
-      }
+      setIsStreaming(true);
 
-      const endTime = performance.now();
-      const calcTime = `${((endTime - startTime) / 1000).toFixed(2)}s`;
-
-      if (!fullAnswerText) {
-        fullAnswerText = generateSmartDocumentResponse(userText, attachedDocs, ragSettings);
-      }
-
-      const finalSources = resSources.length > 0 ? resSources : undefined;
-
-      const assistantMsg: ChatMessageItem = {
+      const initialAssistantMsg: ChatMessageItem = {
         id: assistantMsgId,
         sender: 'assistant',
-        text: fullAnswerText,
+        text: '',
         timestamp: timestampStr,
-        status: 'complete',
-        executionTime: calcTime,
+        status: 'streaming',
         queryType: queryTypeParam,
-        grounded: !!finalSources && finalSources.length > 0,
-        sources: finalSources,
+        grounded: false,
+        sources: undefined,
         ragConfig: {
           provider: ragSettings.provider,
           topK: ragSettings.topK,
@@ -610,7 +605,89 @@ export const KnowledgeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           if (c.id === activeConversationId) {
             return {
               ...c,
-              messages: [...c.messages, assistantMsg],
+              messages: [...c.messages, initialAssistantMsg],
+            };
+          }
+          return c;
+        })
+      );
+
+      let fullAnswerText = '';
+      let resSources: any[] = [];
+      let resCitations: any[] = [];
+      let hasError = false;
+      let errorText = '';
+
+      try {
+        const res = await assistantService.queryDocument(
+          targetDocId,
+          activeConversationId,
+          userText,
+          selectedProvider,
+          queryOptions
+        ).catch((err) => {
+          hasError = true;
+          errorText = err instanceof Error ? err.message : 'Assistant service unavailable';
+          return null;
+        });
+
+        if (res) {
+          if (res.answer || res.content) {
+            fullAnswerText = res.answer || res.content || '';
+          }
+          if (res.sources && res.sources.length > 0) {
+            resSources = res.sources;
+          } else if (res.citations && res.citations.length > 0) {
+            resSources = res.citations;
+          }
+          if (res.citations && res.citations.length > 0) {
+            resCitations = res.citations;
+          }
+        }
+      } catch (err) {
+        hasError = true;
+        errorText = err instanceof Error ? err.message : 'Failed to query assistant';
+      } finally {
+        setIsStreaming(false);
+      }
+
+      const endTime = performance.now();
+      const calcTime = `${((endTime - startTime) / 1000).toFixed(2)}s`;
+
+      if (!fullAnswerText && !hasError) {
+        fullAnswerText = generateSmartDocumentResponse(userText, attachedDocs, ragSettings);
+      }
+
+      const finalSources = resSources.length > 0 ? resSources : undefined;
+      const finalCitations = resCitations.length > 0 ? resCitations : undefined;
+
+      const assistantMsg: ChatMessageItem = {
+        id: assistantMsgId,
+        sender: 'assistant',
+        text: fullAnswerText,
+        timestamp: timestampStr,
+        status: hasError && !fullAnswerText ? 'error' : 'complete',
+        error: hasError && !fullAnswerText ? errorText : undefined,
+        executionTime: calcTime,
+        queryType: queryTypeParam,
+        grounded: (!!finalSources && finalSources.length > 0) || (!!finalCitations && finalCitations.length > 0),
+        sources: finalSources,
+        citations: finalCitations,
+        ragConfig: {
+          provider: ragSettings.provider,
+          topK: ragSettings.topK,
+          threshold: ragSettings.similarityThreshold,
+        },
+      };
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id === activeConversationId) {
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === assistantMsgId ? assistantMsg : m
+              ),
             };
           }
           return c;

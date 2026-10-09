@@ -12,7 +12,7 @@ interface ChatMessageProps {
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isUser = message.sender === 'user';
   const isError = message.status === 'error' || Boolean(message.error);
-  const isStreaming = message.status === 'streaming';
+  const isStreaming = message.status === 'streaming' || (!isUser && !message.text && message.status !== 'complete' && message.status !== 'error');
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

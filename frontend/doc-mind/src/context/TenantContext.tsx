@@ -15,15 +15,14 @@ interface TenantContextType {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, canAccessTenants, isAdmin } = useAuth();
+  const { isAuthenticated, canAccessTenants } = useAuth();
   const [tenants, setTenants] = useState<TenantResponse[]>([]);
   const [activeTenant, setActiveTenantState] = useState<TenantResponse | null>(null);
   const [isLoadingTenants, setIsLoadingTenants] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshTenants = useCallback(async () => {
-    // Standard users (ROLE_USER, i.e., !isAdmin) do not access tenant administration endpoints.
-    if (!isAuthenticated || !isAdmin) {
+    if (!isAuthenticated) {
       setTenants([]);
       setActiveTenantState(null);
       return;
@@ -32,21 +31,26 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setError(null);
     try {
       if (canAccessTenants) {
+        // Platform Admin manages all tenants across the platform and has no single active tenant/workspace
         const response = await tenantService.getTenants({ page: 0, size: 10 });
         if (response && response.contents) {
           setTenants(response.contents);
-          const savedTenantId = localStorage.getItem('docmind_active_tenant_id');
-          const found = response.contents.find((t) => t.tenantId === savedTenantId);
-          setActiveTenantState(found || response.contents[0] || null);
         } else {
           setTenants([]);
-          setActiveTenantState(null);
         }
+        setActiveTenantState(null);
+        localStorage.removeItem('docmind_active_tenant_id');
       } else {
+        // Company Admin, Admin, and standard Users belong to their specific tenant organization
         setTenants([]);
         try {
           const currentTenant = await tenantService.getCurrentTenant();
           setActiveTenantState(currentTenant || null);
+          if (currentTenant) {
+            localStorage.setItem('docmind_active_tenant_id', currentTenant.tenantId);
+          } else {
+            localStorage.removeItem('docmind_active_tenant_id');
+          }
         } catch {
           setActiveTenantState(null);
         }
@@ -59,7 +63,7 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } finally {
       setIsLoadingTenants(false);
     }
-  }, [isAuthenticated, canAccessTenants, isAdmin]);
+  }, [isAuthenticated, canAccessTenants]);
 
   useEffect(() => {
     if (isAuthenticated) {

@@ -24,7 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   onToggleCollapse,
 }) => {
-  const { canAccessTenants, canAccessUsers, isAdmin } = useAuth();
+  const { canAccessTenants, canAccessUsers, isAdmin, isSuperAdmin } = useAuth();
   const { activeTenant } = useTenant();
 
   const navigate = useNavigate();
@@ -60,8 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Main Sidebar Scroll Area */}
       <div className="flex-1 px-2.5 py-3 space-y-4 overflow-x-hidden">
-        {/* Tenant Active Badge */}
-        {!isCollapsed && activeTenant && (
+        {/* Tenant Active Badge (Only for Company Admin, Admin, and standard Users) */}
+        {!isCollapsed && !isSuperAdmin && activeTenant && (
           <div className="mx-0.5 px-2.5 py-1.5 rounded-lg border border-border/60 bg-muted/20 text-[11px] flex items-center justify-between overflow-hidden">
             <div className="flex items-center gap-1.5 truncate">
               <Layers className="size-3 text-muted-foreground shrink-0" />

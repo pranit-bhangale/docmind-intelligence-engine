@@ -38,7 +38,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenRegisterTenant,
   onOpenAddUser,
 }) => {
-  const { isAuthenticated, canAccessUsers, canAccessRoles, canAccessTenants, user } = useAuth();
+  const { isAuthenticated, canAccessUsers, canAccessRoles, canAccessTenants, isSuperAdmin, user } = useAuth();
   const { tenants, activeTenant, refreshTenants, isLoadingTenants } = useTenant();
   const [totalUsersCount, setTotalUsersCount] = useState<number>(0);
   const [recentUsers, setRecentUsers] = useState<UserResponse[]>([]);
@@ -106,7 +106,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div>
               Active User: <span className="font-semibold text-foreground">{user?.username || 'Guest'}</span>
             </div>
-            {activeTenant && (
+            {!isSuperAdmin && activeTenant && (
               <div>
                 Active Workspace: <span className="font-semibold text-foreground">{activeTenant.companyName} ({activeTenant.companyCode})</span>
               </div>
