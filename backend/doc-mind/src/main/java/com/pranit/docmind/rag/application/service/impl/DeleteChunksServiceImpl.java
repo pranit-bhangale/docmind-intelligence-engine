@@ -18,7 +18,7 @@ public class DeleteChunksServiceImpl implements DeleteChunksService {
     @Override
     public void deleteParticularDocumentChunks(final UUID documentId) {
         this.vectorStore.delete(new FilterExpressionBuilder()
-                .eq(DocMetadata.DOCUMENT_ID, documentId)
+                .eq(DocMetadata.DOCUMENT_ID, documentId.toString())
                 .build());
     }
 }

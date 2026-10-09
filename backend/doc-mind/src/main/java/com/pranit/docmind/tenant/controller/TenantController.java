@@ -156,7 +156,7 @@ public class TenantController {
             @ApiResponse(responseCode = "404", description = "Tenant context not found")
     })
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN', 'ADMIN', 'PLATFORM_ADMIN', 'USER')")
     public ResponseEntity<TenantResponse> getCurrentTenant() {
         return ResponseEntity.ok(this.tenantService.getCurrentTenant());
     }
