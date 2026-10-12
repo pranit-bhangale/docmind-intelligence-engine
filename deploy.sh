@@ -905,12 +905,10 @@ wait_for_services() {
                         esac
                         ;;
                     created|restarting)
-                        # Pending states: container is initializing or waiting for dependent network/db
                         svc_pending=1
                         ;;
                     exited)
                         if [[ "$exit_code" -eq 0 ]]; then
-                            # One-off or migration/seed task that completed cleanly
                             svc_completed=1
                         else
                             svc_failed=1
@@ -1182,10 +1180,35 @@ push_service_image() {
         else
             error "Failed to push '${remote_image}'."
             local reg_domain="${target_repo%%/*}"
+            local login_domain=""
             if [[ -n "$reg_domain" && "$reg_domain" =~ [.:] ]]; then
-                warning "If authentication failed, please log in with: docker login ${reg_domain}"
+                login_domain="$reg_domain"
+                warning "Authentication required for ${reg_domain}."
             else
-                warning "If authentication failed, please log in with: docker login"
+                warning "Authentication required for Docker Hub."
+            fi
+
+            if [[ -t 0 ]]; then
+                printf '\n%bWould you like to run "docker login" now to authenticate? [Y/n]:%b ' "${YELLOW}" "${NC}"
+                local do_login=""
+                read -r do_login || do_login="y"
+                if [[ -z "$do_login" || "$do_login" =~ ^[yY]([eE][sS])?$ ]]; then
+                    if [[ -n "$login_domain" ]]; then
+                        docker login "$login_domain"
+                    else
+                        docker login
+                    fi
+                    printf '\n%bRetrying upload for %s...%b\n' "${CYAN}" "$remote_image" "${NC}"
+                    if docker push "$remote_image"; then
+                        local digest
+                        digest="$(docker inspect --format='{{index .RepoDigests 0}}' "$remote_image" 2>/dev/null || true)"
+                        success "Successfully pushed: ${remote_image}"
+                        if [[ -n "$digest" ]]; then
+                            printf '  • %bDigest:%b %s\n' "${GREEN}" "${NC}" "$digest"
+                        fi
+                        continue
+                    fi
+                fi
             fi
             return 1
         fi
@@ -1700,6 +1723,7 @@ usage() {
     printf '  recreate [service]          Force rebuild and recreate service container(s)\n'
     printf '  push [service]              Upload/push built container image(s) to Docker registry\n'
     printf '  upload [service]            Alias for push\n'
+    printf '  login [registry]            Log in to Docker registry (Docker Hub, GHCR, etc.)\n'
     printf '  clean                       Safe interactive clean (containers, volumes, project images)\n'
     printf '  clean -v, --volumes         Clean project persistent Docker volumes\n'
     printf '  clean -i, --images          Remove Docker container images built for this project\n'
@@ -1774,6 +1798,25 @@ case "$COMMAND" in
         check_prerequisites
         validate_compose
         push_images "$PARAM1"
+        ;;
+    login)
+        target_reg="${PARAM1:-}"
+        if [[ -z "$target_reg" ]]; then
+            target_reg="$(detect_registry || true)"
+        fi
+        if [[ -n "$target_reg" ]]; then
+            reg_domain="${target_reg%%/*}"
+            if [[ "$reg_domain" =~ [.:] ]]; then
+                printf '%bLogging in to registry:%b %s\n' "${CYAN}" "${NC}" "$reg_domain"
+                docker login "$reg_domain"
+            else
+                printf '%bLogging in to Docker Hub...%b\n' "${CYAN}" "${NC}"
+                docker login
+            fi
+        else
+            printf '%bLogging in to Docker Hub...%b\n' "${CYAN}" "${NC}"
+            docker login
+        fi
         ;;
     clean|purge|prune)
         for a in "${ARGS[@]+"${ARGS[@]}"}"; do
