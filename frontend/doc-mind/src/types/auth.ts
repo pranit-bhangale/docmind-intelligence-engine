@@ -19,6 +19,7 @@ export interface UserResponse {
 export interface LoginRequest {
   username: string;
   password: string;
+  companyCode?: string;
 }
 
 export interface LoginResponse {

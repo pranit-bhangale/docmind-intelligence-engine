@@ -7,6 +7,10 @@ import com.pranit.docmind.auth.domain.dto.LoginRequest;
 import com.pranit.docmind.auth.domain.dto.LoginResponse;
 import com.pranit.docmind.auth.domain.dto.UserResponse;
 import com.pranit.docmind.auth.exception.UnauthorizedException;
+import com.pranit.docmind.tenant.api.TenantContext;
+import com.pranit.docmind.tenant.domain.entity.Tenant;
+import com.pranit.docmind.tenant.domain.entity.TenantStatus;
+import com.pranit.docmind.tenant.domain.repository.TenantRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Locale;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -39,6 +45,7 @@ public class LoginController {
     private final LoginService loginService;
     private final TokenService tokenService;
     private final LogoutService logoutService;
+    private final TenantRepository tenantRepository;
 
     @Operation(
             summary = "Authenticate user credentials",
@@ -50,9 +57,36 @@ public class LoginController {
             @ApiResponse(responseCode = "401", description = "Bad credentials or inactive account")
     })
     @PostMapping(value = "/login", version = "v1")
-    public ResponseEntity<LoginResponse> authenticateUser(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        final LoginResponse loginRespone = loginService.authenticateUser(request, response);
-        return ResponseEntity.ok().body(loginRespone);
+    public ResponseEntity<LoginResponse> authenticateUser
+            (@Valid @RequestBody final LoginRequest request, final HttpServletResponse response) {
+        final String companyCode = (request.companyCode() != null && !request.companyCode().isBlank())
+                ? request.companyCode().trim() : null;
+        setupTenantContextForLogin(companyCode);
+        try {
+            final LoginResponse loginRespone = loginService.authenticateUser(request, response);
+            return ResponseEntity.ok().body(loginRespone);
+        } finally {
+            TenantContext.clear();
+        }
+    }
+
+    private void setupTenantContextForLogin(final String companyCode) {
+        if (companyCode == null || companyCode.isBlank()) {
+            TenantContext.setCurrentTenant(null);
+            TenantContext.setCurrentSchema("auth");
+            log.debug("Login without company code - targeting platform schema 'auth'");
+            return;
+        }
+        final String trimmedCompanyCode = companyCode.trim();
+        final Tenant tenant = this.tenantRepository.findByCompanyCode(trimmedCompanyCode)
+                .orElseThrow(() -> new UnauthorizedException("Invalid company code or credentials"));
+        if (tenant.getStatus() != TenantStatus.ACTIVE && tenant.getStatus() != TenantStatus.APPROVED) {
+            throw new UnauthorizedException("Tenant organization is " + tenant.getStatus() + ". Login not permitted.");
+        }
+        final String schemaName = "tenant_" + tenant.getCompanyCode().trim().toLowerCase(Locale.ROOT);
+        TenantContext.setCurrentTenant(tenant.getTenantId());
+        TenantContext.setCurrentSchema(schemaName);
+        log.debug("Tenant context initialized for login: tenant: {}, schema: {}", tenant.getTenantId(), schemaName);
     }
 
     @Operation(

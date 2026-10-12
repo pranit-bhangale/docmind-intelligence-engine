@@ -8,6 +8,7 @@ public record LoginRequest(
         @NotBlank(message = "Username should not be empty")
         String username,
         @NotBlank(message = "Password should not be empty")
-        String password
+        String password,
+        String companyCode
 ) {
 }
