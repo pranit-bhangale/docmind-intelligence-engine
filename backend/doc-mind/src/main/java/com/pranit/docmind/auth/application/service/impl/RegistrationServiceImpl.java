@@ -57,7 +57,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .email(user.getEmail())
                 .companyCode(companyCode)
                 .username(user.getUsername())
-                .password(user.getPassword())
+                .password(request.password())
                 .build();
         this.emailRouter.send(event, EmailPurpose.USER_ONBOARD);
         log.info("Email sent for tenant: {} | username: {}", tenantId, user.getUsername());

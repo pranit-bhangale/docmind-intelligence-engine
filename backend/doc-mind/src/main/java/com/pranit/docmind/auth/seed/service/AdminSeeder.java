@@ -39,7 +39,7 @@ public class AdminSeeder implements CommandLineRunner {
         User platformUser = User.builder()
                 .username(properties.username())
                 .password(passwordEncoder.encode(properties.password()))
-                .email("pranitbhangale1453@gmail.com")
+                .email("pranitbhangale14@gmail.com")
                 .tenantId(null)
                 .firstName("Pranit")
                 .lastName("Bhangale")

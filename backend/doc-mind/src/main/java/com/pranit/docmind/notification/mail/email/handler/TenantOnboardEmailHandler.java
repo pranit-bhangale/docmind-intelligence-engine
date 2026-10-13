@@ -27,8 +27,8 @@ public class TenantOnboardEmailHandler implements EmailHandler<TenantOnboardEven
         log.info("Sending Tenant Onboard email. EventID: {}, company name: {}", event.eventId(), event.companyName());
         emailService.sendEmail(event.email(),
                 "Your workspace is ready!",
-                "tenant-onboard-email.html",
+                "tenant-onboard-email",
                 Map.of("companyCode", event.companyCode(),
-                        "username", event.companyName()));
+                        "companyName", event.companyName()));
     }
 }
