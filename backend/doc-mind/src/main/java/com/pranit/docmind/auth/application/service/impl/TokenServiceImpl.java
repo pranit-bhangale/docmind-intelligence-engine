@@ -111,7 +111,7 @@ public class TokenServiceImpl implements TokenService {
             throw new TokenExpiredException("Refresh token expired");
         }
         final UserDetail userDetail = (UserDetail) this.userDetailService.loadUserByUsername(existingToken.getUser().getUsername());
-        final String newJti = Generate.generateJti();
+        final String newJti = Generate.jti();
         final Duration accessTokenTtl = Duration.ofSeconds(tokenProperties.accessToken().expiration());
         final Duration refreshTokenTtl = Duration.ofSeconds(tokenProperties.refreshToken().expiration());
         final String newAccessToken = this.generateToken.generateAccessToken(userDetail);

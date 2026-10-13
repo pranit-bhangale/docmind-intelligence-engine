@@ -52,7 +52,7 @@ public class LoginServiceImpl implements LoginService {
     public LoginResponse authenticateUser(final LoginRequest request, final HttpServletResponse response) {
         final UserDetail authenticatedUser = authenticate(request);
         final UserDetail userDetail = restoreIfRequired(authenticatedUser);
-        final String jti = Generate.generateJti();
+        final String jti = Generate.jti();
         final Instant now = Instant.now();
         saveRefreshToken(userDetail, jti, now);
         final String accessToken = this.generateToken.generateAccessToken(userDetail);

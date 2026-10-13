@@ -53,7 +53,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         log.info("User created for tenant: {}", tenantId);
         final String companyCode = this.tenantValidationService.getCompanyCode(tenantId);
         final OnboardEvent event = OnboardEvent.builder()
-                .eventId(Generate.generateEventId())
+                .eventId(Generate.eventId())
                 .email(user.getEmail())
                 .companyCode(companyCode)
                 .username(user.getUsername())

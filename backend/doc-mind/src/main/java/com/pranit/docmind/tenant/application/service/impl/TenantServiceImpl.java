@@ -81,7 +81,7 @@ public class TenantServiceImpl implements TenantService, TenantValidationService
         }
         tenant.setStatus(TenantStatus.ACTIVE);
         final TenantOnboardEvent event = TenantOnboardEvent.builder()
-                .eventId(Generate.generateEventId())
+                .eventId(Generate.eventId())
                 .email(tenant.getAdminEmail())
                 .companyName(tenant.getCompanyName())
                 .companyCode(tenant.getCompanyCode())

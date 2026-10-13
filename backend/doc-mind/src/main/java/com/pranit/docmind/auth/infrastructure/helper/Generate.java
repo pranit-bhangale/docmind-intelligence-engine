@@ -10,11 +10,11 @@ import java.util.UUID;
 public class Generate {
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public static String generateEventId() {
+    public static String eventId() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    public static String generateJti() {
+    public static String jti() {
         return generateToken(64);
     }
 
@@ -26,7 +26,7 @@ public class Generate {
                 .encodeToString(randomBytes);
     }
 
-    public static String generateChallengeId() {
+    public static String challengeId() {
         return generateToken(6);
     }
 }
