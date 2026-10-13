@@ -1,7 +1,7 @@
 package com.pranit.docmind.notification.mail.service.impl;
 
-import com.pranit.workspace.notification.mail.service.EmailService;
-import com.pranit.workspace.notification.properties.OwnerProperties;
+import com.pranit.docmind.notification.mail.service.EmailService;
+import com.pranit.docmind.notification.properties.OwnerProperties;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

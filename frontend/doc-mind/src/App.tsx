@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterTenantPage } from './pages/RegisterTenantPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { AppShell } from './components/layout/AppShell';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/register-tenant" element={<RegisterTenantPage />} />
               <Route path="/register" element={<RegisterTenantPage />} />
 

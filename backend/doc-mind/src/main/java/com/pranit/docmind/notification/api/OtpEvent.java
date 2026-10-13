@@ -1,6 +1,6 @@
 package com.pranit.docmind.notification.api;
 
-import com.pranit.workspace.notification.mail.event.EmailEvent;
+import com.pranit.docmind.notification.mail.event.EmailEvent;
 import lombok.Builder;
 
 import java.time.Duration;

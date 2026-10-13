@@ -19,7 +19,7 @@ public class OnboardEmailHandler implements EmailHandler<OnboardEvent> {
 
     @Override
     public EmailPurpose supports() {
-        return EmailPurpose.ONBOARD;
+        return EmailPurpose.USER_ONBOARD;
     }
 
     @Override

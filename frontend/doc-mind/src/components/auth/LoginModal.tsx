@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {ArrowRight, Building2, Lock, Sparkles, User} from 'lucide-react';
 import {Modal} from '../ui/Modal';
 import {Input} from '../ui/Input';
@@ -12,6 +13,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({isOpen, onClose}) => {
     const {login} = useAuth();
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [companyCode, setCompanyCode] = useState('');
@@ -81,7 +83,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({isOpen, onClose}) => {
                 </div>
 
                 <div>
-                    <label className="text-xs font-medium text-foreground block mb-1">Password</label>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-medium text-foreground">Password</label>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                navigate('/forgot-password');
+                            }}
+                            className="text-xs text-primary hover:underline transition-colors"
+                        >
+                            Forgot password?
+                        </button>
+                    </div>
                     <Input
                         type="password"
                         value={password}

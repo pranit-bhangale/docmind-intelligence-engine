@@ -11,6 +11,8 @@ public record ChangeForgotPasswordRequest(
         String email,
 
         @Valid
-        PasswordRequest passwordRequest
+        PasswordRequest passwordRequest,
+
+        String companyCode
 ) {
 }

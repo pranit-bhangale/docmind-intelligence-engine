@@ -1,7 +1,6 @@
 package com.pranit.docmind.notification.mail.email.handler;
 
 import com.pranit.docmind.notification.api.EmailPurpose;
-import com.pranit.docmind.notification.api.OnboardEvent;
 import com.pranit.docmind.notification.api.TenantOnboardEvent;
 import com.pranit.docmind.notification.mail.email.EmailHandler;
 import com.pranit.docmind.notification.mail.service.EmailService;
@@ -20,7 +19,7 @@ public class TenantOnboardEmailHandler implements EmailHandler<TenantOnboardEven
 
     @Override
     public EmailPurpose supports() {
-        return EmailPurpose.ONBOARD;
+        return EmailPurpose.TENANT_ONBOARD;
     }
 
     @Override

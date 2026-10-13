@@ -3,7 +3,9 @@ package com.pranit.docmind.auth.controller;
 import com.pranit.docmind.auth.application.service.VerificationService;
 import com.pranit.docmind.auth.domain.dto.VerificationResponse;
 import com.pranit.docmind.auth.domain.dto.VerifyOtp;
+import com.pranit.docmind.auth.infrastructure.helper.PublicTenantContextHelper;
 import com.pranit.docmind.shared.wrapper.ErrorResponse;
+import com.pranit.docmind.tenant.api.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class VerificationController {
 
     private final VerificationService verificationService;
+    private final PublicTenantContextHelper tenantContextHelper;
 
     @PostMapping(value = "/password-reset", version = "v1")
     @Operation(summary = "Verify password reset OTP", description = "Validates the one-time password issued during password recovery.")
@@ -43,6 +46,13 @@ public class VerificationController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<VerificationResponse> verifyPasswordResetOtp(@Valid @RequestBody final VerifyOtp request) {
-        return ResponseEntity.ok(this.verificationService.verifyPasswordResetOtp(request));
+        final String companyCode = (request.companyCode() != null && !request.companyCode().isBlank())
+                ? request.companyCode().trim() : null;
+        this.tenantContextHelper.setupTenantContext(companyCode);
+        try {
+            return ResponseEntity.ok(this.verificationService.verifyPasswordResetOtp(request));
+        } finally {
+            TenantContext.clear();
+        }
     }
 }

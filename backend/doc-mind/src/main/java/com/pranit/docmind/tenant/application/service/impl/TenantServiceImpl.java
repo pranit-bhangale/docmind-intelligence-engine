@@ -86,7 +86,7 @@ public class TenantServiceImpl implements TenantService, TenantValidationService
                 .companyName(tenant.getCompanyName())
                 .companyCode(tenant.getCompanyCode())
                 .build();
-        this.emailRouter.send(event, EmailPurpose.ONBOARD);
+        this.emailRouter.send(event, EmailPurpose.TENANT_ONBOARD);
     }
 
     @Override

@@ -4,7 +4,9 @@ import com.pranit.docmind.auth.application.service.PasswordService;
 import com.pranit.docmind.auth.domain.dto.ChangeForgotPasswordRequest;
 import com.pranit.docmind.auth.domain.dto.ForgotPasswordEmail;
 import com.pranit.docmind.auth.domain.dto.PasswordResponse;
+import com.pranit.docmind.auth.infrastructure.helper.PublicTenantContextHelper;
 import com.pranit.docmind.shared.wrapper.ErrorResponse;
+import com.pranit.docmind.tenant.api.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PasswordController {
 
     private final PasswordService passwordService;
+    private final PublicTenantContextHelper tenantContextHelper;
 
     @PostMapping(value = "/request-reset", version = "v1")
     @Operation(summary = "Request password reset OTP", description = "Dispatches a secure one-time password to the registered email address for account recovery.")
@@ -44,7 +47,14 @@ public class PasswordController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PasswordResponse> requestPasswordReset(@Valid @RequestBody final ForgotPasswordEmail request) {
-        return ResponseEntity.ok(this.passwordService.requestPasswordReset(request));
+        final String companyCode = (request.companyCode() != null && !request.companyCode().isBlank())
+                ? request.companyCode().trim() : null;
+        this.tenantContextHelper.setupTenantContext(companyCode);
+        try {
+            return ResponseEntity.ok(this.passwordService.requestPasswordReset(request));
+        } finally {
+            TenantContext.clear();
+        }
     }
 
     @PostMapping(value = "/reset", version = "v1")
@@ -58,6 +68,13 @@ public class PasswordController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PasswordResponse> resetPassword(@Valid @RequestBody final ChangeForgotPasswordRequest request) {
-        return ResponseEntity.ok(this.passwordService.resetPassword(request));
+        final String companyCode = (request.companyCode() != null && !request.companyCode().isBlank())
+                ? request.companyCode().trim() : null;
+        this.tenantContextHelper.setupTenantContext(companyCode);
+        try {
+            return ResponseEntity.ok(this.passwordService.resetPassword(request));
+        } finally {
+            TenantContext.clear();
+        }
     }
 }
