@@ -42,4 +42,4 @@ out/
 Thumbs.db
 
 # DocMind Build Cache
-.docmind_cache/
+.docmind-intelligence-engine_cache/

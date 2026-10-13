@@ -14,6 +14,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isError = message.status === 'error' || Boolean(message.error);
   const isStreaming = message.status === 'streaming' || (!isUser && !message.text && message.status !== 'complete' && message.status !== 'error');
   const [copied, setCopied] = useState(false);
+  // Collapsible citations state (collapsed by default)
+  const [showCitations, setShowCitations] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.text);
@@ -91,16 +93,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   </div>
                 </div>
               ) : null}
+            </div>
+          )}
 
-              {/* Error UI Display */}
-              {isError && (
-                <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-                  <AlertCircle size={15} className="mt-0.5 shrink-0" />
-                  <div className="leading-snug font-medium">
-                    {message.error || 'AI service is temporarily unavailable. Please try again.'}
-                  </div>
-                </div>
-              )}
+          {/* Error UI Display */}
+          {isError && (
+            <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              <AlertCircle size={15} className="mt-0.5 shrink-0" />
+              <div className="leading-snug font-medium">
+                {message.error || 'AI service is temporarily unavailable. Please try again.'}
+              </div>
             </div>
           )}
 
@@ -114,9 +116,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             </div>
           )}
 
-          {/* Detailed Citations List */}
-          {!isUser && message.citations && message.citations.length > 0 && (
+          {/* Collapsible Source Citations */}
+          {!isUser && message.citations && message.citations.length > 0 && showCitations && (
             <CitationsList citations={message.citations} />
+          )}
+
+          {/* Minimize/Maximize Citations Button */}
+          {!isUser && message.citations && message.citations.length > 0 && (
+            <button
+              onClick={() => setShowCitations(!showCitations)}
+              className="mt-1.5 text-[10px] text-primary font-medium flex items-center gap-1.5 transition-colors hover:gap-2.5"
+            >
+              {showCitations ? (
+                <Layers size={12} className="shrink-0" />
+              ) : (
+                <Eye size={12} className="shrink-0" />
+              )}
+              <span>{showCitations ? "Hide citations" : "Show citations"}</span>
+            </button>
           )}
 
           {/* Fallback Grounded Sources */}

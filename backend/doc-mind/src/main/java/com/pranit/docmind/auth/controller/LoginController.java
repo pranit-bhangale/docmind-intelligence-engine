@@ -63,8 +63,8 @@ public class LoginController {
                 ? request.companyCode().trim() : null;
         setupTenantContextForLogin(companyCode);
         try {
-            final LoginResponse loginRespone = loginService.authenticateUser(request, response);
-            return ResponseEntity.ok().body(loginRespone);
+            final LoginResponse loginResponse = loginService.authenticateUser(request, response);
+            return ResponseEntity.ok().body(loginResponse);
         } finally {
             TenantContext.clear();
         }
@@ -80,8 +80,8 @@ public class LoginController {
         final String trimmedCompanyCode = companyCode.trim();
         final Tenant tenant = this.tenantRepository.findByCompanyCode(trimmedCompanyCode)
                 .orElseThrow(() -> new UnauthorizedException("Invalid company code or credentials"));
-        if (tenant.getStatus() != TenantStatus.ACTIVE && tenant.getStatus() != TenantStatus.APPROVED) {
-            throw new UnauthorizedException("Tenant organization is " + tenant.getStatus() + ". Login not permitted.");
+        if (tenant.getStatus() != TenantStatus.ACTIVE) {
+            throw new UnauthorizedException("Your organization is not permitted to log in.");
         }
         final String schemaName = "tenant_" + tenant.getCompanyCode().trim().toLowerCase(Locale.ROOT);
         TenantContext.setCurrentTenant(tenant.getTenantId());
