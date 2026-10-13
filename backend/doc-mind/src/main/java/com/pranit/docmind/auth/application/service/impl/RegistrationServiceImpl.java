@@ -11,9 +11,14 @@ import com.pranit.docmind.auth.domain.repository.UserRepository;
 import com.pranit.docmind.auth.domain.repository.UserRoleRepository;
 import com.pranit.docmind.auth.exception.RoleAlreadyAssignedException;
 import com.pranit.docmind.auth.exception.RoleNotFoundException;
+import com.pranit.docmind.auth.infrastructure.helper.Generate;
+import com.pranit.docmind.notification.api.EmailPurpose;
+import com.pranit.docmind.notification.api.EmailRouter;
+import com.pranit.docmind.notification.api.OnboardEvent;
 import com.pranit.docmind.shared.exception.DuplicateResourceException;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
 import com.pranit.docmind.tenant.api.TenantContext;
+import com.pranit.docmind.tenant.api.TenantValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +36,8 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
+    private final EmailRouter emailRouter;
+    private final TenantValidationService tenantValidationService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -44,6 +51,16 @@ public class RegistrationServiceImpl implements RegistrationService {
         user = this.userRepository.save(user);
         assignRoleToUser(user, role);
         log.info("User created for tenant: {}", tenantId);
+        final String companyCode = this.tenantValidationService.getCompanyCode(tenantId);
+        final OnboardEvent event = OnboardEvent.builder()
+                .eventId(Generate.generateEventId())
+                .email(user.getEmail())
+                .companyCode(companyCode)
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .build();
+        this.emailRouter.send(event, EmailPurpose.ONBOARD);
+        log.info("Email sent for tenant: {} | username: {}", tenantId, user.getUsername());
     }
 
     private void validateUserDoesNotExist(final String username, final String email) {

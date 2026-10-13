@@ -1,9 +1,14 @@
 package com.pranit.docmind.tenant.application.service.impl;
 
+import com.pranit.docmind.auth.infrastructure.helper.Generate;
+import com.pranit.docmind.notification.api.EmailPurpose;
+import com.pranit.docmind.notification.api.EmailRouter;
+import com.pranit.docmind.notification.api.TenantOnboardEvent;
 import com.pranit.docmind.shared.exception.DuplicateResourceException;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
 import com.pranit.docmind.shared.wrapper.PageResponse;
 import com.pranit.docmind.tenant.api.TenantContext;
+import com.pranit.docmind.tenant.api.TenantValidationService;
 import com.pranit.docmind.tenant.application.mapper.TenantMapper;
 import com.pranit.docmind.tenant.application.service.TenantProvisioningService;
 import com.pranit.docmind.tenant.application.service.TenantService;
@@ -32,12 +37,13 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TenantServiceImpl implements TenantService {
+public class TenantServiceImpl implements TenantService, TenantValidationService {
 
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
     private final PasswordEncoder passwordEncoder;
     private final TenantProvisioningService tenantProvisioningService;
+    private final EmailRouter emailRouter;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -74,6 +80,13 @@ public class TenantServiceImpl implements TenantService {
             throw new InvalidRequestException("Tenant can only be activated when status is APPROVED or SUSPENDED");
         }
         tenant.setStatus(TenantStatus.ACTIVE);
+        final TenantOnboardEvent event = TenantOnboardEvent.builder()
+                .eventId(Generate.generateEventId())
+                .email(tenant.getAdminEmail())
+                .companyName(tenant.getCompanyName())
+                .companyCode(tenant.getCompanyCode())
+                .build();
+        this.emailRouter.send(event, EmailPurpose.ONBOARD);
     }
 
     @Override
@@ -136,5 +149,11 @@ public class TenantServiceImpl implements TenantService {
     private Tenant fetchAndValidateTenantById(final String tenantId) {
         return this.tenantRepository.findBytenantId(tenantId)
                 .orElseThrow(() -> new EntityNotFoundException("Tenant does not exist"));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    public String getCompanyCode(final String tenantId) {
+        return this.fetchAndValidateTenantById(tenantId).getCompanyCode();
     }
 }
