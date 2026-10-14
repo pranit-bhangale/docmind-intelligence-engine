@@ -51,7 +51,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isCollapsed ? 'justify-center px-0' : 'px-3.5 justify-start'
         )}
         onClick={onToggleCollapse}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         <div className="flex items-center gap-2 overflow-hidden text-left">
           <Logo size="sm" showText={!isCollapsed} />

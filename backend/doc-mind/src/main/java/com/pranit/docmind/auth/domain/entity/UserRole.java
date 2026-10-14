@@ -18,7 +18,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "user_roles", schema = "auth")
+@Table(name = "user_roles")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

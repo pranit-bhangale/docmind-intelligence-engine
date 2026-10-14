@@ -17,6 +17,8 @@ public interface TenantRepository extends JpaRepository<Tenant, String>, JpaSpec
 
     boolean existsByCompanyCode(String companyCode);
 
+    Optional<Tenant> findByCompanyCode(String companyCode);
+
     boolean existsByEmail(String email);
 
     @Modifying

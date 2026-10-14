@@ -12,7 +12,10 @@ public class PublicEndpointProviderImpl implements PublicEndpointProvider {
             "/v3/api-docs/**",
             "/actuator/health",
             "/api/auth/login",
-            "/api/tenants/register"
+            "/api/tenants/register",
+            "/api/auth/password/request-reset",
+            "/api/auth/password/reset",
+            "/api/auth/verify/password-reset"
     };
 
     @Override

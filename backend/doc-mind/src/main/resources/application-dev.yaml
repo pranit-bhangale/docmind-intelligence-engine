@@ -172,6 +172,8 @@ security:
     publicKeyPath: ${PUBLIC_KEY_PATH}
 # DocMind Default Credentials and Cors Configuration
 docmind:
+  owner:
+    email: ${MAIL_FROM}
   enrich:
     # per-request defaults (client can override)
     enabled: true
