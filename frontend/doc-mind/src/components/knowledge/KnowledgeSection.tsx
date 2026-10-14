@@ -17,7 +17,6 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ isCollapsed 
       <div className="flex flex-col items-center gap-2 py-2 border-t border-border/60">
         <button
           className="flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          title={`Knowledge Base (${documents.length} documents)`}
         >
           <Database className="size-4 text-primary" />
         </button>

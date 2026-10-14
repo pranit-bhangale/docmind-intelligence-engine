@@ -13,7 +13,7 @@ import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
-public final class CookieServiceImpl implements CookieService {
+public class CookieServiceImpl implements CookieService {
 
     private final CookieProperties properties;
 

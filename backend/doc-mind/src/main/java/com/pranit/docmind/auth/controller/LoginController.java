@@ -7,6 +7,8 @@ import com.pranit.docmind.auth.domain.dto.LoginRequest;
 import com.pranit.docmind.auth.domain.dto.LoginResponse;
 import com.pranit.docmind.auth.domain.dto.UserResponse;
 import com.pranit.docmind.auth.exception.UnauthorizedException;
+import com.pranit.docmind.auth.infrastructure.helper.PublicTenantContextHelper;
+import com.pranit.docmind.tenant.api.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -39,6 +41,7 @@ public class LoginController {
     private final LoginService loginService;
     private final TokenService tokenService;
     private final LogoutService logoutService;
+    private final PublicTenantContextHelper tenantContextHelper;
 
     @Operation(
             summary = "Authenticate user credentials",
@@ -50,9 +53,18 @@ public class LoginController {
             @ApiResponse(responseCode = "401", description = "Bad credentials or inactive account")
     })
     @PostMapping(value = "/login", version = "v1")
-    public ResponseEntity<LoginResponse> authenticateUser(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        final LoginResponse loginRespone = loginService.authenticateUser(request, response);
-        return ResponseEntity.ok().body(loginRespone);
+    public ResponseEntity<LoginResponse> authenticateUser
+            (@Valid @RequestBody final LoginRequest request, final HttpServletResponse response) {
+        final String companyCode = (request.companyCode() != null && !request.companyCode().isBlank())
+                ? request.companyCode().trim() : null;
+        this.tenantContextHelper.setupTenantContext
+                (companyCode, "Your organization is not permitted to log in.");
+        try {
+            final LoginResponse loginResponse = loginService.authenticateUser(request, response);
+            return ResponseEntity.ok().body(loginResponse);
+        } finally {
+            TenantContext.clear();
+        }
     }
 
     @Operation(

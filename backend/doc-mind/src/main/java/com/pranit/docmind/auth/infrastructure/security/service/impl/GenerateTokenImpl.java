@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public final class GenerateTokenImpl implements GenerateToken {
+public class GenerateTokenImpl implements GenerateToken {
 
     private final TokenProperties tokenProperties;
     private final PrivateKey privateKey;

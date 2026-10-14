@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 @Configuration
 @EnableAsync
-public class AsyncConfig {
+public class TenantAsyncConfig {
 
     @Bean(name = "provisioningExecutor")
     public Executor provisioningExecutor() {

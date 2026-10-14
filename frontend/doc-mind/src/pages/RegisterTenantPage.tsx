@@ -90,7 +90,7 @@ export const RegisterTenantPage: React.FC = () => {
                 <label className="text-xs font-medium text-foreground block mb-1">Company Name</label>
                 <Input
                   name="companyName"
-                  placeholder="Acme Corporation"
+                  placeholder="Enter company name"
                   value={formData.companyName}
                   onChange={handleChange}
                   icon={<Building2 className="size-3.5" />}
@@ -102,7 +102,7 @@ export const RegisterTenantPage: React.FC = () => {
                 <label className="text-xs font-medium text-foreground block mb-1">Company Code</label>
                 <Input
                   name="companyCode"
-                  placeholder="ACME"
+                  placeholder="Enter company code"
                   value={formData.companyCode}
                   onChange={handleChange}
                   icon={<Code className="size-3.5" />}
@@ -116,7 +116,7 @@ export const RegisterTenantPage: React.FC = () => {
               <Input
                 type="email"
                 name="email"
-                placeholder="contact@acme.com"
+                placeholder="Enter company contact email"
                 value={formData.email}
                 onChange={handleChange}
                 icon={<Mail className="size-3.5" />}
@@ -134,7 +134,7 @@ export const RegisterTenantPage: React.FC = () => {
                   <label className="text-xs font-medium text-foreground block mb-1">Admin Full Name</label>
                   <Input
                     name="adminFullName"
-                    placeholder="Jane Doe"
+                    placeholder="Enter admin full name"
                     value={formData.adminFullName}
                     onChange={handleChange}
                     icon={<User className="size-3.5" />}
@@ -148,7 +148,7 @@ export const RegisterTenantPage: React.FC = () => {
                     <Input
                       type="email"
                       name="adminEmail"
-                      placeholder="admin@acme.com"
+                      placeholder="Enter admin email"
                       value={formData.adminEmail}
                       onChange={handleChange}
                       icon={<Mail className="size-3.5" />}
@@ -160,7 +160,7 @@ export const RegisterTenantPage: React.FC = () => {
                     <label className="text-xs font-medium text-foreground block mb-1">Admin Username</label>
                     <Input
                       name="adminUsername"
-                      placeholder="acme_admin"
+                      placeholder="Enter admin username"
                       value={formData.adminUsername}
                       onChange={handleChange}
                       icon={<ShieldCheck className="size-3.5" />}

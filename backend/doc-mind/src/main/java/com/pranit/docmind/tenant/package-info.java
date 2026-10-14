@@ -1,6 +1,6 @@
 @ApplicationModule(
         displayName = "Tenant",
-        allowedDependencies = {"shared"}
+        allowedDependencies = {"shared", "notification::api"}
 )
 package com.pranit.docmind.tenant;
 

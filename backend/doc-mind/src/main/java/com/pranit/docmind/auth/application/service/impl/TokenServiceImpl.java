@@ -14,6 +14,8 @@ import com.pranit.docmind.auth.infrastructure.properties.TokenProperties;
 import com.pranit.docmind.auth.infrastructure.security.service.CookieService;
 import com.pranit.docmind.auth.infrastructure.security.service.ExtractClaim;
 import com.pranit.docmind.auth.infrastructure.security.service.GenerateToken;
+import com.pranit.docmind.tenant.api.TenantContext;
+import com.pranit.docmind.tenant.api.TenantSchemaResolver;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +44,7 @@ public class TokenServiceImpl implements TokenService {
     private final CookieProperties cookieProperties;
     private final TokenProperties tokenProperties;
     private final UserDetailService userDetailService;
+    private final TenantSchemaResolver tenantSchemaResolver;
 
     @Override
     public Optional<String> readRefreshTokenFromRequest(final HttpServletRequest request) {
@@ -61,6 +64,30 @@ public class TokenServiceImpl implements TokenService {
         if (!this.extractClaim.isRefreshToken(claims)) {
             throw new UnauthorizedException("Invalid token");
         }
+        final String tenantId = this.extractClaim.getTenantIdFromAccessToken(claims);
+        final boolean contextSetHere;
+        if (TenantContext.getCurrentSchema() == null) {
+            if (tenantId != null && !tenantId.isBlank()) {
+                TenantContext.setCurrentTenant(tenantId);
+                TenantContext.setCurrentSchema(this.tenantSchemaResolver.resolveTenantSchema(tenantId));
+            } else {
+                TenantContext.setCurrentTenant(null);
+                TenantContext.setCurrentSchema("auth");
+            }
+            contextSetHere = true;
+        } else {
+            contextSetHere = false;
+        }
+        try {
+            rotateToken(claims, response);
+        } finally {
+            if (contextSetHere) {
+                TenantContext.clear();
+            }
+        }
+    }
+
+    private void rotateToken(final Claims claims, final HttpServletResponse response) {
         final String jti = this.extractClaim.getJtiFromRefreshToken(claims);
         final UUID userId = this.extractClaim.getUserIdFromRefreshToken(claims);
         if (jti == null || jti.isBlank() || userId == null) {
@@ -84,7 +111,7 @@ public class TokenServiceImpl implements TokenService {
             throw new TokenExpiredException("Refresh token expired");
         }
         final UserDetail userDetail = (UserDetail) this.userDetailService.loadUserByUsername(existingToken.getUser().getUsername());
-        final String newJti = Generate.generateJti();
+        final String newJti = Generate.jti();
         final Duration accessTokenTtl = Duration.ofSeconds(tokenProperties.accessToken().expiration());
         final Duration refreshTokenTtl = Duration.ofSeconds(tokenProperties.refreshToken().expiration());
         final String newAccessToken = this.generateToken.generateAccessToken(userDetail);

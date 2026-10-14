@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public final class ExtractClaimImpl implements ExtractClaim {
+public class ExtractClaimImpl implements ExtractClaim {
 
     private final PublicKey publicKey;
 

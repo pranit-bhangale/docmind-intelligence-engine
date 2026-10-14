@@ -88,7 +88,6 @@ export const TopNav: React.FC<TopNavProps> = ({
           <button
             onClick={() => startNewChat()}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-background hover:bg-accent text-foreground text-[11px] font-medium transition-all shadow-2xs"
-            title="Start new chat session"
           >
             <MessageSquare className="size-3 text-primary" />
             <span>New Chat</span>
@@ -104,7 +103,6 @@ export const TopNav: React.FC<TopNavProps> = ({
                 ? 'border-amber-500/50 bg-amber-500/10 text-amber-400 shadow-xs'
                 : 'border-zinc-700 bg-zinc-800 text-zinc-300'
             }`}
-            title={`Switch to ${generationMode === 'streaming' ? 'Blocking' : 'Streaming'} response mode`}
           >
             {generationMode === 'streaming' ? (
               <>
@@ -130,7 +128,6 @@ export const TopNav: React.FC<TopNavProps> = ({
                   ? 'border-primary bg-primary/10 text-primary shadow-xs'
                   : 'border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground'
               }`}
-              title="Configure RAG AI Provider, Top-K, and Similarity Threshold"
             >
               <SlidersHorizontal className="size-3 text-primary" />
               <span className="hidden sm:inline">RAG Settings</span>
@@ -273,7 +270,6 @@ export const TopNav: React.FC<TopNavProps> = ({
             <button
               onClick={() => startNewChat()}
               className="lg:hidden flex size-7 items-center justify-center rounded-full border border-border bg-background hover:bg-accent text-foreground transition-colors shrink-0"
-              title="Start new chat session"
             >
               <MessageSquare className="size-3.5 text-primary" />
             </button>
@@ -282,7 +278,6 @@ export const TopNav: React.FC<TopNavProps> = ({
               onClick={exportChatAsMarkdown}
               disabled={messages.length === 0}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors text-xs font-medium"
-              title="Export chat as Markdown (.md)"
             >
               <Download className="size-3.5 text-primary shrink-0" />
               <span className="hidden sm:inline">Download</span>

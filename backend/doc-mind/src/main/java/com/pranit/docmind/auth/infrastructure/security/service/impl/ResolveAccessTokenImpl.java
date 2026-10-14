@@ -13,7 +13,7 @@ import java.util.Arrays;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class ResolveAccessTokenImpl implements ResolveAccessToken {
+public class ResolveAccessTokenImpl implements ResolveAccessToken {
 
     private final CookieProperties properties;
 

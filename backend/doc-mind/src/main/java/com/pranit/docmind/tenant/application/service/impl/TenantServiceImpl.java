@@ -1,9 +1,15 @@
 package com.pranit.docmind.tenant.application.service.impl;
 
+import com.pranit.docmind.auth.infrastructure.helper.Generate;
+import com.pranit.docmind.notification.api.EmailPurpose;
+import com.pranit.docmind.notification.api.EmailRouter;
+import com.pranit.docmind.notification.api.TenantControlEvent;
+import com.pranit.docmind.notification.api.TenantOnboardEvent;
 import com.pranit.docmind.shared.exception.DuplicateResourceException;
 import com.pranit.docmind.shared.exception.InvalidRequestException;
 import com.pranit.docmind.shared.wrapper.PageResponse;
 import com.pranit.docmind.tenant.api.TenantContext;
+import com.pranit.docmind.tenant.api.TenantValidationService;
 import com.pranit.docmind.tenant.application.mapper.TenantMapper;
 import com.pranit.docmind.tenant.application.service.TenantProvisioningService;
 import com.pranit.docmind.tenant.application.service.TenantService;
@@ -26,18 +32,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TenantServiceImpl implements TenantService {
+public class TenantServiceImpl implements TenantService, TenantValidationService {
 
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
     private final PasswordEncoder passwordEncoder;
     private final TenantProvisioningService tenantProvisioningService;
+    private final EmailRouter emailRouter;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -70,10 +79,26 @@ public class TenantServiceImpl implements TenantService {
     @Transactional(propagation = Propagation.REQUIRED)
     public void activateTenant(final String tenantId) {
         final Tenant tenant = this.fetchAndValidateTenantById(tenantId);
-        if (tenant.getStatus() != TenantStatus.APPROVED && tenant.getStatus() != TenantStatus.SUSPENDED) {
-            throw new InvalidRequestException("Tenant can only be activated when status is APPROVED or SUSPENDED");
+        if (tenant.getStatus() != TenantStatus.APPROVED
+                && tenant.getStatus() != TenantStatus.SUSPENDED
+                && tenant.getStatus() != TenantStatus.INACTIVE) {
+            throw new InvalidRequestException("Tenant can only be activated when status is APPROVED, SUSPENDED, or INACTIVE");
         }
         tenant.setStatus(TenantStatus.ACTIVE);
+        final TenantOnboardEvent event = TenantOnboardEvent.builder()
+                .eventId(Generate.eventId())
+                .email(tenant.getAdminEmail())
+                .companyName(tenant.getCompanyName())
+                .companyCode(tenant.getCompanyCode())
+                .build();
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        emailRouter.send(event, EmailPurpose.TENANT_ONBOARD);
+                    }
+                }
+        );
     }
 
     @Override
@@ -84,6 +109,20 @@ public class TenantServiceImpl implements TenantService {
             throw new InvalidRequestException("Tenant can only be deactivated when status is ACTIVE");
         }
         tenant.setStatus(TenantStatus.INACTIVE);
+        final TenantControlEvent event = TenantControlEvent.builder()
+                .eventId(Generate.eventId())
+                .email(tenant.getAdminEmail())
+                .companyName(tenant.getCompanyName())
+                .companyCode(tenant.getCompanyCode())
+                .build();
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        emailRouter.send(event, EmailPurpose.DEACTIVATE);
+                    }
+                }
+        );
     }
 
     @Override
@@ -94,6 +133,20 @@ public class TenantServiceImpl implements TenantService {
             throw new InvalidRequestException("Tenant can only be suspended when status is INACTIVE");
         }
         tenant.setStatus(TenantStatus.SUSPENDED);
+        final TenantControlEvent event = TenantControlEvent.builder()
+                .eventId(Generate.eventId())
+                .email(tenant.getAdminEmail())
+                .companyName(tenant.getCompanyName())
+                .companyCode(tenant.getCompanyCode())
+                .build();
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        emailRouter.send(event, EmailPurpose.SUSPEND);
+                    }
+                }
+        );
     }
 
     @Override
@@ -136,5 +189,11 @@ public class TenantServiceImpl implements TenantService {
     private Tenant fetchAndValidateTenantById(final String tenantId) {
         return this.tenantRepository.findBytenantId(tenantId)
                 .orElseThrow(() -> new EntityNotFoundException("Tenant does not exist"));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    public String getCompanyCode(final String tenantId) {
+        return this.fetchAndValidateTenantById(tenantId).getCompanyCode();
     }
 }

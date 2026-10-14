@@ -49,6 +49,7 @@ export const SettingsView: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Backend Service Health */}
+        {isSuperAdmin && (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -59,42 +60,43 @@ export const SettingsView: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground flex items-center gap-1.5">
-                <Activity className="size-3.5 text-emerald-500" />
-                Health Check
-              </span>
-              <Badge variant="outline" className="gap-1.5 text-xs text-emerald-500 border-emerald-500/30 bg-emerald-500/10 font-medium">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                {healthStatus === 'CHECKING' ? 'Checking...' : `${healthStatus}`}
-              </Badge>
-            </div>
+                <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <Activity className="size-3.5 text-emerald-500" />
+                    Health Check
+                  </span>
+                  <Badge variant="outline" className="gap-1.5 text-xs text-emerald-500 border-emerald-500/30 bg-emerald-500/10 font-medium">
+                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    {healthStatus === 'CHECKING' ? 'Checking...' : `${healthStatus}`}
+                  </Badge>
+                </div>
 
-            <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground">Swagger UI Specs</span>
-              <a
-                href="/swagger-ui/index.html"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
-              >
-                API Docs <ExternalLink className="size-3" />
-              </a>
-            </div>
+                <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                  <span className="text-muted-foreground">Swagger UI Specs</span>
+                  <a
+                    href="/swagger-ui/index.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
+                  >
+                    API Docs <ExternalLink className="size-3" />
+                  </a>
+                </div>
 
-            <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
-              <span className="text-muted-foreground">OpenAPI Spec (JSON)</span>
-              <a
-                href="/swagger_spec.json"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
-              >
-                View JSON <ExternalLink className="size-3" />
-              </a>
-            </div>
-          </CardContent>
+                <div className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20">
+                  <span className="text-muted-foreground">OpenAPI Spec (JSON)</span>
+                  <a
+                    href="/swagger_spec.json"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
+                  >
+                    View JSON <ExternalLink className="size-3" />
+                  </a>
+                </div>
+            </CardContent>
         </Card>
+      )}
 
         {/* Card 2: Security Policy */}
         <Card>
